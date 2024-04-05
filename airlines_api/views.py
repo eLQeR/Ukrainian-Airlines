@@ -1,6 +1,5 @@
 from rest_framework import mixins, viewsets
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from airlines_api.permissions import IsAdminOrIfAuthenticatedReadOnly
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -19,11 +18,10 @@ from airlines_api.serializers import (
     OrderSerializer,
     AirportSerializer,
     TicketSerializer,
-    TicketDetailSerializer,
     RouteSerializer,
     AirplaneSerializer,
     AirplaneTypeSerializer,
-    FlightSerializer, RouteDetailSerializer, RouteListSerializer
+    FlightSerializer, RouteDetailSerializer, RouteListSerializer, FlightListSerializer, AirplaneDetailSerializer
 )
 
 
@@ -37,6 +35,17 @@ class OrderViewSet(
     serializer_class = OrderSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return OrderSerializer
+        return OrderSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 class AirportViewSet(
@@ -56,6 +65,18 @@ class AirplaneViewSet(
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
 
+    def get_queryset(self):
+        queryset = self.queryset
+        airplane_type_id = self.request.query_params.get("airplane_type_id", None)
+        if airplane_type_id:
+            queryset = queryset.filter(airplane_type_id=airplane_type_id)
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return AirplaneSerializer
+        return AirplaneDetailSerializer
+
 
 class FlightViewSet(
     viewsets.ModelViewSet
@@ -64,6 +85,21 @@ class FlightViewSet(
     serializer_class = FlightSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return FlightListSerializer
+        return FlightSerializer
+
+    def get_queryset(self):
+        queryset = self.queryset
+        departure_time = self.request.query_params.get("departure_time", None)
+        route_id = self.request.query_params.get("route_id", None)
+        if route_id:
+            queryset = queryset.filter(route_id=route_id)
+        if departure_time:
+            queryset = queryset.filter(departure_time=departure_time)
+        return queryset
 
 
 class RouteViewSet(
@@ -81,6 +117,16 @@ class RouteViewSet(
             return RouteDetailSerializer
         return RouteListSerializer
 
+    def get_queryset(self):
+        queryset = self.queryset
+        destination_id = self.request.query_params.get("destination_id", None)
+        source_id = self.request.query_params.get("source_id", None)
+        if source_id:
+            queryset = queryset.filter(source_id=source_id)
+        if destination_id:
+            queryset = queryset.filter(departure_time=destination_id)
+        return queryset
+
 
 class TicketViewSet(
     viewsets.ModelViewSet
@@ -88,9 +134,19 @@ class TicketViewSet(
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
+    permission_classes = (IsAdminUser, )
 
-#
+    def get_queryset(self):
+        queryset = self.queryset
+        first_name = self.request.query_params.get("first_name", None)
+        last_name = self.request.query_params.get("last_name", None)
+        if first_name:
+            queryset = queryset.filter(first_name=first_name)
+        if last_name:
+            queryset = queryset.filter(last_name=last_name)
+        return queryset
+
+
 # def index(request, *args, **kwargs):
 #     for i in range(1, 10, 2):
 #         a1 = Airport.objects.create(name=f"Airport-{i}", closest_big_city=f"City-{i}")
