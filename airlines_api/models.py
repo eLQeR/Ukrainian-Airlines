@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 
 class Airport(models.Model):
@@ -35,6 +36,9 @@ class Airplane(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def capacity(self) -> int:
+        return self.rows * self.seats_in_row
 
 class Crew(models.Model):
     first_name = models.CharField(max_length=255)
@@ -51,11 +55,13 @@ class Flight(models.Model):
     departure_time = models.DateTimeField()
     crews = models.ManyToManyField(to=Crew, blank=True)
 
+    def __str__(self):
+        return str(self.route)
+
 
 class Passenger(models.Model):
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
-    flight = models.ForeignKey(to=Flight, on_delete=models.CASCADE, related_name="passengers")
 
 
 class Order(models.Model):
@@ -65,6 +71,9 @@ class Order(models.Model):
     def __str__(self):
         return f"{self.created_at} - {self.user}"
 
+    class Meta:
+        ordering = ["-created_at"]
+
 
 class Ticket(models.Model):
     row = models.IntegerField()
@@ -73,5 +82,46 @@ class Ticket(models.Model):
     order = models.ForeignKey(to=Order, on_delete=models.CASCADE, related_name="tickets")
     passenger = models.OneToOneField(to=Passenger, on_delete=models.CASCADE, related_name="ticket")
 
+    class Meta:
+        unique_together = ("flight", "row", "seat")
+        ordering = ("row", "seat")
+
     def __str__(self):
-        return f"{self.row} - {self.seat} - {self.passenger}"
+        return f"{self.flight} {self.row} - {self.seat} - {self.passenger}"
+
+    @staticmethod
+    def validate_ticket(row, seat, airplane, error_to_raize):
+        for ticket_attr_value, ticket_attr_name, airplane_attr_name in [
+            (row, "row", "rows"),
+            (seat, "seat", "seats_in_row")
+        ]:
+            count_attr_value = getattr(airplane, airplane_attr_name)
+            if not (1 <= ticket_attr_value <= count_attr_value):
+                raise error_to_raize(
+                    {
+                        ticket_attr_name: f"{ticket_attr_name} "
+                        f"number must be in available range: "
+                        f"(1, {airplane_attr_name}): "
+                        f"(1, {count_attr_value})"
+                    }
+                )
+
+    def clean(self):
+        Ticket.validate_ticket(
+            self.row,
+            self.seat,
+            self.flight.airplane,
+            ValidationError
+        )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
