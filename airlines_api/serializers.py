@@ -19,7 +19,7 @@ from airlines_api.models import (
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
-        fields = ("id", "first_name", "last_name")
+        fields = ("id", "first_name", "last_name", "avatar")
 
 
 class AirportSerializer(serializers.ModelSerializer):
@@ -46,18 +46,24 @@ class AirplaneSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "rows", "seats_in_row", "airplane_type")
 
 
+class AirplaneFlightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airplane
+        fields = ("name", "image")
+
+
 class AirplaneDetailSerializer(serializers.ModelSerializer):
     airplane_type = serializers.CharField(source="airplane_type.name", read_only=True)
 
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "capacity", "airplane_type")
+        fields = ("id", "name", "rows", "seats_in_row", "capacity", "airplane_type", "image")
 
 
 class FlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "arrival_time", "departure_time")
+        fields = ("id", "route", "airplane", "arrival_time", "departure_time", "crews")
 
 
 class PassengerSerializer(serializers.ModelSerializer):
@@ -119,11 +125,20 @@ class RouteFlightSerializer(serializers.ModelSerializer):
 
 class FlightListSerializer(FlightSerializer):
     route = RouteFlightSerializer(many=False, read_only=True)
-    airplane = serializers.CharField(source="airplane.name", read_only=True)
+    airplane = AirplaneFlightSerializer(many=False, read_only=True)
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "arrival_time", "departure_time")
+        fields = ("id", "arrival_time", "departure_time", "route", "airplane")
+
+
+class FlightDetailSerializer(FlightListSerializer):
+    crews = CrewSerializer(many=True, read_only=True)
+    route = RouteListSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Flight
+        fields = ("id", "arrival_time", "departure_time", "route", "airplane", "crews")
 
 
 class FlightRouteListSerializer(FlightSerializer):
@@ -131,7 +146,7 @@ class FlightRouteListSerializer(FlightSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "airplane", "arrival_time", "departure_time")
+        fields = ("id", "arrival_time", "departure_time", "airplane")
 
 
 class RouteDetailSerializer(RouteListSerializer):
@@ -140,6 +155,3 @@ class RouteDetailSerializer(RouteListSerializer):
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance", "flights")
-
-
-
