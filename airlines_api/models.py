@@ -1,5 +1,9 @@
+import uuid
+import os
+
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.utils.text import slugify
 from rest_framework.exceptions import ValidationError
 
 
@@ -27,11 +31,20 @@ class AirplaneType(models.Model):
         return self.name
 
 
+def create_airplane_image_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    return os.path.join(
+        "planes/",
+        f"{slugify(instance.name)}-{uuid.uuid4()}{extension}"
+    )
+
+
 class Airplane(models.Model):
     name = models.CharField(max_length=255)
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
     airplane_type = models.ForeignKey(to=AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+    image = models.ImageField(upload_to=create_airplane_image_path, default="planes/no_plan_photo.png")
 
     def __str__(self):
         return self.name
@@ -40,7 +53,17 @@ class Airplane(models.Model):
     def capacity(self) -> int:
         return self.rows * self.seats_in_row
 
+
+def create_avatar_path(instance, filename):
+    _, extension = os.path.splitext(filename)
+    return os.path.join(
+        "avatars/",
+        f"{slugify(instance.last_name)}-{uuid.uuid4()}{extension}"
+    )
+
+
 class Crew(models.Model):
+    avatar = models.ImageField(upload_to=create_avatar_path, default="avatars/no_avatar.jpg")
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
 
