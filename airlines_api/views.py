@@ -21,7 +21,8 @@ from airlines_api.serializers import (
     RouteSerializer,
     AirplaneSerializer,
     AirplaneTypeSerializer,
-    FlightSerializer, RouteDetailSerializer, RouteListSerializer, FlightListSerializer, AirplaneDetailSerializer
+    FlightSerializer, RouteDetailSerializer, RouteListSerializer, FlightListSerializer, AirplaneDetailSerializer,
+    FlightDetailSerializer
 )
 
 
@@ -89,6 +90,8 @@ class FlightViewSet(
     def get_serializer_class(self):
         if self.action == 'list':
             return FlightListSerializer
+        if self.action == 'retrieve':
+            return FlightDetailSerializer
         return FlightSerializer
 
     def get_queryset(self):
