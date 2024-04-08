@@ -23,6 +23,9 @@ class Route(models.Model):
     def __str__(self):
         return f"{self.source} -> {self.destination}"
 
+    class Meta:
+        unique_together = ("source", "destination")
+
 
 class AirplaneType(models.Model):
     name = models.CharField(max_length=255)
@@ -80,6 +83,9 @@ class Flight(models.Model):
 
     def __str__(self):
         return str(self.route)
+ #TODO property for time of flight (arrival_time-departure_time)
+    class Meta:
+        ordering = ['departure_time']
 
 
 class Passenger(models.Model):
