@@ -83,7 +83,16 @@ class Flight(models.Model):
 
     def __str__(self):
         return str(self.route)
- #TODO property for time of flight (arrival_time-departure_time)
+
+    @property
+    def capacity(self):
+        return self.airplane.capacity
+
+    @property
+    def time_of_flight(self):
+        return str(self.arrival_time - self.departure_time)
+
+    #TODO property for time of flight (arrival_time-departure_time)
     class Meta:
         ordering = ['departure_time']
 
@@ -129,9 +138,9 @@ class Ticket(models.Model):
                 raise error_to_raize(
                     {
                         ticket_attr_name: f"{ticket_attr_name} "
-                        f"number must be in available range: "
-                        f"(1, {airplane_attr_name}): "
-                        f"(1, {count_attr_value})"
+                                          f"number must be in available range: "
+                                          f"(1, {airplane_attr_name}): "
+                                          f"(1, {count_attr_value})"
                     }
                 )
 
@@ -144,11 +153,11 @@ class Ticket(models.Model):
         )
 
     def save(
-        self,
-        force_insert=False,
-        force_update=False,
-        using=None,
-        update_fields=None,
+            self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None,
     ):
         self.full_clean()
         return super(Ticket, self).save(
