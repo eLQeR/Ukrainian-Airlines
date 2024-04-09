@@ -1,4 +1,9 @@
-from rest_framework import mixins, viewsets
+import datetime
+
+from django.db.models import Count, F
+from django.http import HttpResponse, Http404
+from rest_framework import mixins, viewsets, generics
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from airlines_api.permissions import IsAdminOrIfAuthenticatedReadOnly
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -21,8 +26,13 @@ from airlines_api.serializers import (
     RouteSerializer,
     AirplaneSerializer,
     AirplaneTypeSerializer,
-    FlightSerializer, RouteDetailSerializer, RouteListSerializer, FlightListSerializer, AirplaneDetailSerializer,
-    FlightDetailSerializer
+    FlightSerializer,
+    RouteDetailSerializer,
+    RouteListSerializer,
+    FlightListSerializer,
+    AirplaneDetailSerializer,
+    FlightDetailSerializer,
+    TicketListSerializer
 )
 
 
@@ -55,7 +65,7 @@ class AirportViewSet(
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class AirplaneViewSet(
@@ -64,7 +74,7 @@ class AirplaneViewSet(
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -85,7 +95,7 @@ class FlightViewSet(
     queryset = Flight.objects.all()
     serializer_class = FlightSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -102,6 +112,10 @@ class FlightViewSet(
             queryset = queryset.filter(route_id=route_id)
         if departure_time:
             queryset = queryset.filter(departure_time=departure_time)
+
+        if self.action in ('list', "retrieve"):
+            queryset = queryset.select_related(
+            ).annotate(tickets_avaliable=(F("airplane__rows") * F("airplane__seats_in_row")) - Count('tickets'))
         return queryset
 
 
@@ -111,7 +125,7 @@ class RouteViewSet(
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly, )
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -135,19 +149,33 @@ class TicketViewSet(
     viewsets.ModelViewSet
 ):
     queryset = Ticket.objects.all()
-    serializer_class = TicketSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminUser, )
+    permission_classes = (IsAdminUser,)
+
+    def get_serializer_class(self):
+        #TODO custom action to get all passenger from flight
+        if self.action == "list":
+            return TicketListSerializer
+        return TicketSerializer
 
     def get_queryset(self):
         queryset = self.queryset
         first_name = self.request.query_params.get("first_name", None)
         last_name = self.request.query_params.get("last_name", None)
+        flight = self.request.query_params.get("flight", None)
         if first_name:
             queryset = queryset.filter(first_name=first_name)
         if last_name:
             queryset = queryset.filter(last_name=last_name)
+        if flight:
+            queryset = queryset.filter(flight=flight)
         return queryset
+
+
+def index(request):
+    airport1 = Airport.objects.first()
+    airport2 = Airport.objects.last()
+    return HttpResponse(str(get_ways_to_airport(airport1, airport2, "2021-02-01")))
 
 
 # def index(request, *args, **kwargs):
@@ -170,3 +198,75 @@ class TicketViewSet(
 #         )
 #         flight1.crews.add(crew1, crew2)
 #         flight2.crews.add(crew1, crew2)
+#
+#
+class WaysToAirportView(generics.ListAPIView):
+    queryset = Flight.objects.all()
+    def get_queryset(self):
+        airport1 = self.request.query_params.get("airport1", None)
+        airport2 = self.request.query_params.get("airport2", None)
+        date = self.request.query_params.get("date", None)
+        if not(airport1 and airport2 and date):
+            return Http404("Please enter both airports!")
+        airport1 = get_object_or_404(Airport, pk=airport1)
+        airport2 = get_object_or_404(Airport, pk=airport2)
+
+        print("source ", airport1)
+        print("destination ", airport2)
+        right_ways = Flight.objects.filter(route__destination=airport1, route__source=airport2, departure_time__gt=date)
+        if right_ways:
+            return right_ways
+
+        return get_transfer_flights(airport1, airport2, date)
+
+    def get_serializer_class(self):
+        return FlightDetailSerializer
+
+
+
+def get_ways_to_airport(airport1: Airport, airport2: Airport, date: str):
+    print("source ", airport1)
+    print("destination ", airport2)
+    right_ways = Flight.objects.filter(route__destination=airport1, route__source=airport2, departure_time__gt=date)
+    if right_ways:
+        return right_ways
+    results = {
+        "result": f"There are no right flight from {airport1.name} to {airport2.name}.",
+        "not_right_flights": get_transfer_flights(airport1, airport2, date)
+    }
+    if right_ways.get("not_right_flights"):
+        "first_flight"
+    print("result")
+    print(results)
+    return results
+
+
+def get_transfer_flights(airport1: Airport, airport2: Airport, date: str):
+    transfer_flights = []
+    flights_avaliable = Flight.objects.filter(
+        departure_time__gt=date,
+        departure_time__day=date[-1]
+    )
+    print("flights_avaliable ", flights_avaliable)
+
+    airports_as_transfer = [
+        route.source
+        for route in Route.objects.filter(
+            destination=airport2
+        ).order_by('distance')
+    ]
+
+    print("airports_as_transfer", airports_as_transfer)
+
+    for airport in airports_as_transfer:
+        flights = flights_avaliable.filter(route__source=airport, route__destination=airport2)
+        if flights:
+            # not_right_flights[airport.name] = [str(flight) for flight in flights]
+            transfer_flights.extend(flights)
+
+    print(transfer_flights)
+    if not transfer_flights:
+        return None
+
+    return transfer_flights
+
