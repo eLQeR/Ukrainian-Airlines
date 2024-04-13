@@ -201,7 +201,7 @@ class TicketViewSet(
 #
 
 
-def validate_data(query_params) -> tuple:
+def get_validated_data(query_params) -> tuple:
     airport1_id = query_params.get("airport1", None)
     airport2_id = query_params.get("airport2", None)
     date = query_params.get("date", None)
@@ -221,23 +221,14 @@ class FivePerMinuteUserThrottle(UserRateThrottle):
 @api_view(["GET"])
 @throttle_classes([FivePerMinuteUserThrottle])
 def get_transfer_ways(request, *args, **kwargs):
-    # airport1 = Airport.objects.get(pk=request.query_params.get("airport1", None))
-    # airport2 = Airport.objects.get(pk=request.query_params.get("airport2", None))
-    # date = datetime.datetime.strptime(request.query_params.get("date", None), "%Y-%m-%d")
     try:
-        airport1, airport2, date = validate_data(request.query_params)
+        airport1, airport2, date = get_validated_data(request.query_params)
     except ObjectDoesNotExist:
         return Response({"error": "Please enter correct airport1 and airport2"}, status=status.HTTP_400_BAD_REQUEST)
     except ValueError as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
     #TODO validation of data
-    results = get_ways_to_airport(airport1, airport2, date)
-
-    avaliable_tranfers_list = []
-    for result in results:
-        #TODO serializer for tickets_avaliable
-        avaliable_tranfers_list.append(FlightListSerializer(result, many=True).data)
-    return Response(avaliable_tranfers_list)
+    return Response(get_ways_to_airport(airport1, airport2, date))
 
 
 def get_ways_to_airport(airport1: Airport, airport2: Airport, date: datetime):
@@ -247,13 +238,14 @@ def get_ways_to_airport(airport1: Airport, airport2: Airport, date: datetime):
         departure_time__gt=date,
         departure_time__lt=date + datetime.timedelta(days=2),
     )
+
     if right_ways:
         return {"result": FlightListSerializer(right_ways, many=True).data}
 
     transfer_flights = get_transfer_flights(airport1, airport2, date)
 
     if transfer_flights:
-        return transfer_flights
+        return {"result": [FlightListSerializer(flights, many=True).data for flights in transfer_flights]}
 
     return {"result": f"There are no any flight from {airport1.name} to {airport2.name}."}
 
@@ -273,8 +265,10 @@ def get_transfer_flights(airport1: Airport, airport2: Airport, date: str):
 
     for route in routes:
         if (route.id, ) in flights_avaliable.values_list("route"):
-            route_to_transfer = Route.objects.get(source=airport1, destination=route.source)
-            #TODO throw exepciption 404 if no row
+            try:
+                route_to_transfer = Route.objects.get(source=airport1, destination=route.source)
+            except ObjectDoesNotExist:
+                continue
             if (route_to_transfer.id, ) in flights_avaliable.values_list("route"):
                 airports_as_transfer.append((route.source, (Flight.objects.filter(route=route_to_transfer))))
 
@@ -283,12 +277,12 @@ def get_transfer_flights(airport1: Airport, airport2: Airport, date: str):
         flights_to_destination = flights_avaliable.filter(route__source=airport, route__destination=airport2)
         if flights_to_destination:
             for flight_to_destination in flights_to_destination:
-                #TODO check or fligth_destin_depart_time less than flight_transfer_arrival_time
                 for flight_to_transfer in flights_to_transfer:
-                    transfer_flights.append((
-                        flight_to_transfer,
-                        flight_to_destination
-                    ))
+                    if flight_to_transfer.arrival_time < flight_to_destination.departure_time:
+                        transfer_flights.append((
+                            flight_to_transfer,
+                            flight_to_destination
+                        ))
 
     if not transfer_flights:
         return None
