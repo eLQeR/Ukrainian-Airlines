@@ -97,7 +97,7 @@ class AirplaneViewSet(
 class FlightViewSet(
     viewsets.ModelViewSet
 ):
-    queryset = Flight.objects.all()
+    queryset = Flight.objects.filter(is_completed=False)
     serializer_class = FlightSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
@@ -227,7 +227,7 @@ def get_transfer_ways(request, *args, **kwargs):
         return Response({"error": "Please enter correct airport1 and airport2"}, status=status.HTTP_400_BAD_REQUEST)
     except ValueError as e:
         return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    #TODO validation of data
+
     return Response(get_ways_to_airport(airport1, airport2, date))
 
 
@@ -269,6 +269,8 @@ def get_transfer_flights(airport1: Airport, airport2: Airport, date: str):
                 route_to_transfer = Route.objects.get(source=airport1, destination=route.source)
             except ObjectDoesNotExist:
                 continue
+
+
             if (route_to_transfer.id, ) in flights_avaliable.values_list("route"):
                 airports_as_transfer.append((route.source, (Flight.objects.filter(route=route_to_transfer))))
 
