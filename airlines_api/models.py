@@ -80,6 +80,7 @@ class Flight(models.Model):
     arrival_time = models.DateTimeField()
     departure_time = models.DateTimeField()
     crews = models.ManyToManyField(to=Crew, blank=True)
+    is_completed = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.route)
@@ -92,7 +93,6 @@ class Flight(models.Model):
     def time_of_flight(self):
         return str(self.arrival_time - self.departure_time)
 
-    #TODO property for time of flight (arrival_time-departure_time)
     class Meta:
         ordering = ['departure_time']
 
