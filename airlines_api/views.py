@@ -3,7 +3,7 @@ import datetime
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, F
 from rest_framework import mixins, viewsets, generics, status
-from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.decorators import api_view, throttle_classes, action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
@@ -72,6 +72,17 @@ class AirportViewSet(
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        queryset = self.queryset
+        name = self.request.query_params.get("name", None)
+        city = self.request.query_params.get("city", None)
+
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+        if city:
+            queryset = queryset.filter(closest_big_city__icontains=city)
+
+        return queryset
 
 class AirplaneViewSet(
     viewsets.ModelViewSet
@@ -157,6 +168,15 @@ class TicketViewSet(
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminUser,)
 
+    @action(detail=True, methods=['GET'], url_path="get-tickets", permission_classes=[IsAuthenticated])
+    def get_tickets(self, request, pk=None):
+        flight = self.get_object()
+        return Response(TicketListSerializer(flight.tickets, many=True).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], url_path="get-tickets", permission_classes=[IsAuthenticated])
+    def get_passengers(self, request, pk=None):
+        flight = self.get_object()
+        return Response(TicketListSerializer(flight.tickets, many=True).data, status=status.HTTP_200_OK)
     def get_serializer_class(self):
         #TODO custom action to get all passenger from flight
         if self.action == "list":
