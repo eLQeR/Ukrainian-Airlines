@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
-from airlines_api.permissions import IsAdminOrIfAuthenticatedReadOnly
+from airlines_api.permissions import IsAdminOrReadOnly
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from airlines_api.models import (
@@ -37,7 +37,8 @@ from airlines_api.serializers import (
     FlightListSerializer,
     AirplaneDetailSerializer,
     FlightDetailSerializer,
-    TicketListSerializer
+    TicketListSerializer,
+    PassengerSerializer
 )
 
 
@@ -70,7 +71,7 @@ class AirportViewSet(
     queryset = Airport.objects.all()
     serializer_class = AirportSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -90,7 +91,7 @@ class AirplaneViewSet(
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_queryset(self):
         queryset = self.queryset
@@ -111,23 +112,49 @@ class FlightViewSet(
     queryset = Flight.objects.filter(is_completed=False)
     serializer_class = FlightSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
+
+    @action(detail=True, methods=['GET'], url_path="tickets", permission_classes=[IsAdminUser])
+    def get_tickets(self, request, pk=None):
+        flight = self.get_object()
+        return Response(self.get_serializer(flight.tickets.all(), many=True).data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['GET'], url_path="passengers", permission_classes=[IsAdminUser])
+    def get_passengers(self, request, pk=None):
+        flight = self.get_object()
+        passengers = [ticket.passenger for ticket in flight.tickets.all()]
+        return Response(self.get_serializer(passengers, many=True).data, status=status.HTTP_200_OK)
 
     def get_serializer_class(self):
         if self.action == 'list':
             return FlightListSerializer
-        if self.action == 'retrieve':
+
+        elif self.action == 'retrieve':
             return FlightDetailSerializer
+
+        elif self.action == 'get_tickets':
+            return TicketListSerializer
+
+        elif self.action == 'get_passengers':
+            return PassengerSerializer
+
         return FlightSerializer
 
     def get_queryset(self):
         queryset = self.queryset
-        departure_time = self.request.query_params.get("departure_time", None)
-        route_id = self.request.query_params.get("route_id", None)
+        departure_date = self.request.query_params.get("departure_date", None)
+        route_id = self.request.query_params.get("route", None)
+        source_airport_id = self.request.query_params.get("source_airport", None)
+        destination_airport_id = self.request.query_params.get("destination_airport", None)
+
+        if source_airport_id:
+            queryset = queryset.filter(route__source_id=source_airport_id)
+        if destination_airport_id:
+            queryset = queryset.filter(route__destination_id=destination_airport_id)
         if route_id:
             queryset = queryset.filter(route_id=route_id)
-        if departure_time:
-            queryset = queryset.filter(departure_time=departure_time)
+        if departure_date:
+            queryset = queryset.filter(departure_time__date=departure_date)
 
         if self.action in ('list', "retrieve"):
             queryset = queryset.select_related(
@@ -141,7 +168,7 @@ class RouteViewSet(
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "create":
@@ -168,15 +195,7 @@ class TicketViewSet(
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminUser,)
 
-    @action(detail=True, methods=['GET'], url_path="get-tickets", permission_classes=[IsAuthenticated])
-    def get_tickets(self, request, pk=None):
-        flight = self.get_object()
-        return Response(TicketListSerializer(flight.tickets, many=True).data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['GET'], url_path="get-tickets", permission_classes=[IsAuthenticated])
-    def get_passengers(self, request, pk=None):
-        flight = self.get_object()
-        return Response(TicketListSerializer(flight.tickets, many=True).data, status=status.HTTP_200_OK)
     def get_serializer_class(self):
         #TODO custom action to get all passenger from flight
         if self.action == "list":
