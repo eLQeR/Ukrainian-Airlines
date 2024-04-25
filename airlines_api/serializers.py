@@ -98,13 +98,6 @@ class FlightTicketSerializer(serializers.ModelSerializer):
         fields = ("id", "route")
 
 
-class TicketListSerializer(serializers.ModelSerializer):
-    passenger = PassengerSerializer(many=False, read_only=True)
-    flight = FlightTicketSerializer(many=False, read_only=True)
-
-    class Meta:
-        model = Ticket
-        fields = ("id", "row", "seat", "flight", "passenger")
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -155,6 +148,14 @@ class TicketFlightSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = ("row", "seat")
+
+
+class TicketListSerializer(serializers.ModelSerializer):
+    passenger = PassengerSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "passenger")
 
 
 class FlightDetailSerializer(serializers.ModelSerializer):
