@@ -38,7 +38,8 @@ from airlines_api.serializers import (
     AirplaneDetailSerializer,
     FlightDetailSerializer,
     TicketListSerializer,
-    PassengerSerializer
+    PassengerSerializer,
+    AirportDetailSerializer
 )
 
 
@@ -84,6 +85,13 @@ class AirportViewSet(
             queryset = queryset.filter(closest_big_city__icontains=city)
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return AirportDetailSerializer
+
+        return AirportSerializer
+
 
 class AirplaneViewSet(
     viewsets.ModelViewSet
@@ -195,9 +203,7 @@ class TicketViewSet(
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminUser,)
 
-
     def get_serializer_class(self):
-        #TODO custom action to get all passenger from flight
         if self.action == "list":
             return TicketListSerializer
         return TicketSerializer
@@ -297,35 +303,33 @@ def get_transfer_flights(airport1: Airport, airport2: Airport, date: str):
     )
 
     routes = Route.objects.filter(
-            destination=airport2
-        ).order_by('distance')
+        destination=airport2
+    ).order_by('distance')
 
     airports_as_transfer = []
 
     for route in routes:
-        if (route.id, ) in flights_avaliable.values_list("route"):
+        if (route.id,) in flights_avaliable.values_list("route"):
             try:
                 route_to_transfer = Route.objects.get(source=airport1, destination=route.source)
             except ObjectDoesNotExist:
                 continue
 
+            if (route_to_transfer.id,) in flights_avaliable.values_list("route"):
+                airports_as_transfer.append((route.source, (flights_avaliable.filter(route=route_to_transfer))))
 
-            if (route_to_transfer.id, ) in flights_avaliable.values_list("route"):
-                airports_as_transfer.append((route.source, (Flight.objects.filter(route=route_to_transfer))))
-
-
-    for airport, flights_to_transfer in airports_as_transfer:
-        flights_to_destination = flights_avaliable.filter(route__source=airport, route__destination=airport2)
-        if flights_to_destination:
-            for flight_to_destination in flights_to_destination:
-                for flight_to_transfer in flights_to_transfer:
-                    if flight_to_transfer.arrival_time < flight_to_destination.departure_time:
+    for airport, transfer_flights in airports_as_transfer:
+        destination_flights = flights_avaliable.filter(route__source=airport, route__destination=airport2)
+        if destination_flights:
+            for destination_flight in destination_flights:
+                for transfer_flight in transfer_flights:
+                    if transfer_flight.arrival_time < destination_flight.departure_time:
                         transfer_flights.append((
-                            flight_to_transfer,
-                            flight_to_destination
+                            transfer_flight,
+                            destination_flight
                         ))
 
-    if not transfer_flights:
-        return None
-    return transfer_flights
+    if transfer_flights:
+        return transfer_flights
 
+    return None
