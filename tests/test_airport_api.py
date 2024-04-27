@@ -3,7 +3,8 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from airlines_api.models import Airport
+from airlines_api.models import Airport, Route
+from airlines_api.serializers import AirportSerializer, AirportDetailSerializer
 from user.models import User
 
 
@@ -38,9 +39,15 @@ class UserApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data),  1)
 
-        self.assertEqual(response.data[0]["name"], "Kean")
-        self.assertEqual(response.data[0]["closest_big_city"], "Paris")
+        self.assertEqual(response.data, AirportSerializer([self.airport], many=True).data)
 
+    def test_retrieve_airport(self):
+        airport2 = Airport.objects.create(name="Lasam", closest_big_city="Leon")
+        Route.objects.create(source=self.airport, destination=airport2, distance=100)
+        response = self.client.get("/api/airlines/airports/2/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        airport = Airport.objects.get(pk=2)
+        self.assertEqual(response.data, AirportDetailSerializer(airport, many=False).data)
 
     def test_create_airport_forbidden(self):
         response = self.client.post(
