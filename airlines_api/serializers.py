@@ -189,3 +189,19 @@ class RouteDetailSerializer(RouteListSerializer):
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance", "flights")
+
+
+class RouteAirportsSerializer(RouteListSerializer):
+
+    class Meta:
+        model = Route
+        fields = ("id", "source", "destination", "distance")
+
+
+class AirportDetailSerializer(serializers.ModelSerializer):
+    routes_as_sourse = RouteAirportsSerializer(many=True, read_only=True)
+    routes_as_destination = RouteAirportsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Airport
+        fields = ("id", "name", "closest_big_city", "routes_as_sourse", "routes_as_destination")
