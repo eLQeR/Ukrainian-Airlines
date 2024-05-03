@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     "user",
     "rest_framework",
     "rest_framework_simplejwt",
-    "django_celery_beat"
+    "django_celery_beat",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -133,7 +134,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    # "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
@@ -143,6 +144,13 @@ REST_FRAMEWORK = {
         "anon": "30/minute",
         "user": "100/minute"
     }
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Ukrainian_Airlines',
+    'DESCRIPTION': 'It is Airlines System to managing flights and booking',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
 
 SIMPLE_JWT = {
