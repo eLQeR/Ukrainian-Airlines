@@ -90,6 +90,8 @@ class TicketSerializer(serializers.ModelSerializer):
         return data
 
 
+
+
 class FlightTicketSerializer(serializers.ModelSerializer):
     route = RouteSerializer(many=False, read_only=True)
 
@@ -216,3 +218,23 @@ class AirportDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
         fields = ("id", "name", "closest_big_city", "routes_as_sourse", "routes_as_destination")
+
+
+class TicketDetailSerializer(serializers.ModelSerializer):
+    passenger = PassengerSerializer(many=False, read_only=False)
+    flight = FlightListSerializer(many=False, read_only=False)
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight", "passenger")
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    tickets = TicketDetailSerializer(many=True, read_only=False)
+
+    class Meta:
+        model = Order
+        fields = ("id", "created_at", "tickets")
+
+
+class OrderListSerializer(OrderDetailSerializer):
+    tickets = TicketListSerializer(many=True, read_only=False)

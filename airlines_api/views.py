@@ -40,7 +40,9 @@ from airlines_api.serializers import (
     TicketListSerializer,
     PassengerSerializer,
     AirportDetailSerializer,
-    FlightAdminDetailSerializer
+    FlightAdminDetailSerializer,
+    OrderDetailSerializer,
+    OrderListSerializer,
 )
 
 
@@ -60,7 +62,9 @@ class OrderViewSet(
 
     def get_serializer_class(self):
         if self.action == 'list':
-            return OrderSerializer
+            return OrderListSerializer
+        if self.action == "retrieve":
+            return OrderDetailSerializer
         return OrderSerializer
 
     def perform_create(self, serializer):
@@ -162,7 +166,7 @@ class FlightViewSet(
             return TicketListSerializer
 
         elif self.action == 'get_departured_flight':
-                return FlightAdminDetailSerializer
+            return FlightAdminDetailSerializer
 
         elif self.action == 'get_passengers':
             return PassengerSerializer
@@ -305,7 +309,6 @@ def get_transfer_ways(request, *args, **kwargs):
 
 
 def get_ways_to_airport(airport1: Airport, airport2: Airport, date: datetime):
-
     """"The function that tries to find right ways to certain airport,
     otherwise call 'get_transfer_flights' function """
 
