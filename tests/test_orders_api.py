@@ -219,11 +219,22 @@ class AuthenticatedUserApiTests(TestCase):
         order.refresh_from_db()
         self.assertEqual(len(Order.objects.filter(pk=self.user.id)), 1)
 
+    def test_cancel_order(self):
+        order = Order.objects.create(
+            user=self.user,
+        )
+        response = self.client.post(f"{ORDER_URL}{order.id}/cancel/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        order.refresh_from_db()
+        self.assertTrue(order.is_cancelled)
+
     def test_delete_order_forbidden(self):
         order = Order.objects.create(
             user=self.user,
         )
         response = self.client.delete(f"{ORDER_URL}{order.id}/")
+
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
         self.assertEqual(len(Order.objects.filter(pk=order.id)), 1)
 
