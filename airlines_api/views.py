@@ -2,11 +2,13 @@ import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count, F
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiExample, OpenApiParameter, extend_schema, extend_schema_view
 from rest_framework import mixins, viewsets, generics, status
 from rest_framework.decorators import api_view, throttle_classes, action, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
 
@@ -17,12 +19,9 @@ from airlines_api.models import (
     Order,
     Airport,
     Airplane,
-    AirplaneType,
-    Passenger,
     Ticket,
     Flight,
     Route,
-    Crew
 )
 from airlines_api.serializers import (
     OrderSerializer,
@@ -30,7 +29,6 @@ from airlines_api.serializers import (
     TicketSerializer,
     RouteSerializer,
     AirplaneSerializer,
-    AirplaneTypeSerializer,
     FlightSerializer,
     RouteDetailSerializer,
     RouteListSerializer,
@@ -46,6 +44,25 @@ from airlines_api.serializers import (
 )
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get list of your orders",
+        description="User can get a list of his orders.",
+    ),
+    retrieve=extend_schema(
+        summary="Get a certain order",
+        description="User can get a certain his order.",
+    ),
+    create=extend_schema(
+        summary="Get a certain order",
+        description="User can create an order.",
+    ),
+    cancel_order=extend_schema(
+        summary="Cancel a certain order",
+        description="User can cancel a certain his order.",
+        methods=["POST"]
+    )
+)
 class OrderViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
@@ -70,7 +87,36 @@ class OrderViewSet(
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
+    @action(detail=True, methods=['POST'], url_path="cancel")
+    def cancel_order(self, request, pk=None):
+        order = self.get_object()
+        order.is_cancelled = True
+        order.save()
+        return Response(self.get_serializer(order, many=False).data, status=status.HTTP_200_OK)
 
+
+@extend_schema_view(
+    update=extend_schema(
+        summary="Update a certain airport",
+        description="Admin can update a certain airport.",
+    ),
+    partial_update=extend_schema(
+        summary="Partial update a certain airport",
+        description="Admin can make partial update a certain airport.",
+    ),
+    retrieve=extend_schema(
+        summary="Get a certain airport",
+        description="User can get a certain airport.",
+    ),
+    create=extend_schema(
+        summary="Create an airport",
+        description="Admin can create an airport.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a certain airport",
+        description="Admin can delete an airport.",
+    ),
+)
 class AirportViewSet(
     viewsets.ModelViewSet
 ):
@@ -91,6 +137,37 @@ class AirportViewSet(
 
         return queryset
 
+    @extend_schema(
+        summary="Get list of airports",
+        description="User can get a list of airports.",
+        methods=["GET"],
+        parameters=[
+            OpenApiParameter(
+                name='name',
+                description='Filter by name of airport',
+                required=False,
+                type=str
+            ),
+            OpenApiParameter(
+                name='city',
+                description='Filter by city name',
+                required=False,
+                type=str
+            ),
+        ],
+        examples=[
+            OpenApiExample(
+                'Example 1',
+                value={
+                    "name": "Sharon",
+                    "city": "Paris"
+                }
+            )
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return AirportDetailSerializer
@@ -98,6 +175,40 @@ class AirportViewSet(
         return AirportSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get list of airplanes",
+        description="User can get a list of airplanes.",
+        parameters=[
+            OpenApiParameter(
+                name='airplane_type_id',
+                description='Filter by airplane_type id',
+                required=False,
+                type=int
+            )
+        ]
+    ),
+    update=extend_schema(
+        summary="Update a certain airplane",
+        description="Admin can update a certain airplane.",
+    ),
+    partial_update=extend_schema(
+        summary="Partial update a certain airplane",
+        description="Admin can make partial update a certain airplane.",
+    ),
+    retrieve=extend_schema(
+        summary="Get a certain airplane",
+        description="User can get a certain airplane.",
+    ),
+    create=extend_schema(
+        summary="Create an airplane",
+        description="Admin can create an airplane.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a certain airplane",
+        description="Admin can delete an airplane.",
+    ),
+)
 class AirplaneViewSet(
     viewsets.ModelViewSet
 ):
@@ -119,6 +230,28 @@ class AirplaneViewSet(
         return AirplaneDetailSerializer
 
 
+@extend_schema_view(
+    update=extend_schema(
+        summary="Update a certain flight",
+        description="Admin can update a certain flight.",
+    ),
+    partial_update=extend_schema(
+        summary="Partial update a certain flight",
+        description="Admin can make partial update a certain flight.",
+    ),
+    retrieve=extend_schema(
+        summary="Get a certain flight",
+        description="User can get a certain flight.",
+    ),
+    create=extend_schema(
+        summary="Create an flight",
+        description="Admin can create an flight.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a certain flight",
+        description="Admin can delete an flight.",
+    ),
+)
 class FlightViewSet(
     viewsets.ModelViewSet
 ):
@@ -127,17 +260,71 @@ class FlightViewSet(
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrReadOnly,)
 
+    @extend_schema(
+        summary="Get taken tickets of flight",
+        description='Get all taken tickets of flight',
+        methods=["GET"],
+    )
     @action(detail=True, methods=['GET'], url_path="tickets", permission_classes=[IsAdminUser])
     def get_tickets(self, request, pk=None):
         flight = self.get_object()
         return Response(self.get_serializer(flight.tickets.all(), many=True).data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary="Get passengers of flight",
+        description='Get all passengers of flight',
+        methods=["GET"],
+    )
     @action(detail=True, methods=['GET'], url_path="passengers", permission_classes=[IsAdminUser])
     def get_passengers(self, request, pk=None):
         flight = self.get_object()
         passengers = [ticket.passenger for ticket in flight.tickets.all()]
         return Response(self.get_serializer(passengers, many=True).data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary='Get list departured flights',
+        description='Admin can get a flight list with departured flights',
+        methods=["GET"],
+        parameters=[
+            OpenApiParameter(
+                name='source_airport',
+                description='Filter by source airport',
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name='destination_airport',
+                description='Filter by destination airport',
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name='departure_date',
+                required=False,
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description='Filter by departure date',
+            ),
+        ],
+        examples=[
+            OpenApiExample(
+                'Example 1',
+                value={
+                    "source_airport": 1,
+                    "destination_airport": 3,
+                    "date": "2025-04-24",
+                    "route": 1
+                }
+            ),
+            OpenApiExample(
+                'Example 2',
+                value={
+                    "date": "2025-04-24",
+                    "route": 1
+                }
+            ),
+        ],
+    )
     @action(
         detail=False,
         methods=['GET'],
@@ -149,11 +336,62 @@ class FlightViewSet(
         flights = self.get_queryset()
         return Response(self.get_serializer(flights, many=True).data, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        summary='Get a certain departured flight',
+        description='Admin can get a flight that has been departured',
+        methods=["GET"],
+    )
     @action(detail=True, methods=['GET'], url_path="departured", permission_classes=[IsAdminUser], name='departured')
     def get_departured_flight(self, request, pk=None):
         flight = get_object_or_404(self.get_queryset(), pk=pk)
 
         return Response(self.get_serializer(flight, many=False).data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        summary="Get list of flights",
+        description="User can get a list of flights.",
+        parameters=[
+            OpenApiParameter(
+                name='source_airport',
+                description='Filter by source airport',
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name='destination_airport',
+                description='Filter by destination airport',
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name='departure_date',
+                required=False,
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                description='Filter by departure date',
+            ),
+        ],
+        examples=[
+            OpenApiExample(
+                'Example 1',
+                value={
+                    "source_airport": 1,
+                    "destination_airport": 3,
+                    "date": "2025-04-24",
+                    "route": 1
+                }
+            ),
+            OpenApiExample(
+                'Example 2',
+                value={
+                    "date": "2025-04-24",
+                    "route": 1
+                }
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_serializer_class(self):
         if self.action in ('list', "get_passed_flights"):
@@ -198,6 +436,46 @@ class FlightViewSet(
         return queryset
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get list of routes",
+        description="User can get a list of routes.",
+        parameters=[
+            OpenApiParameter(
+                name='source_id',
+                description='Filter by source id',
+                required=False,
+                type=int
+            ),
+            OpenApiParameter(
+                name='destination_id',
+                description='Filter by destination id',
+                required=False,
+                type=int
+            )
+        ]
+    ),
+    update=extend_schema(
+        summary="Update a certain route",
+        description="Admin can update a certain route.",
+    ),
+    partial_update=extend_schema(
+        summary="Partial update a certain route",
+        description="Admin can make partial update a certain route.",
+    ),
+    retrieve=extend_schema(
+        summary="Get a certain route",
+        description="User can get a certain route.",
+    ),
+    create=extend_schema(
+        summary="Create an route",
+        description="Admin can create a route.",
+    ),
+    destroy=extend_schema(
+        summary="Delete a certain route",
+        description="Admin can delete a route.",
+    ),
+)
 class RouteViewSet(
     viewsets.ModelViewSet
 ):
@@ -224,8 +502,38 @@ class RouteViewSet(
         return queryset
 
 
+@extend_schema_view(
+    list=extend_schema(
+        summary="Get list of tickets",
+        description="Admin have an opportunity to get list of all tickets",
+    ),
+    update=extend_schema(
+        summary="Update a certain ticket",
+        description="Admin have an opportunity to update "
+                    "certain ticket if there is a need for it",
+
+    ),
+    partial_update=extend_schema(
+        summary="Partial update a certain ticket",
+        description="Admin can make partial update a certain ticket"
+                    "  if there is a need for it.",
+    ),
+    retrieve=extend_schema(
+        summary="Delete a certain ticket",
+        description="Admin have an opportunity to delete a ticket of someone\'s",
+    ),
+    destroy=extend_schema(
+        summary="Delete a certain ticket",
+        description="Admin can delete a ticket.",
+    ),
+
+)
 class TicketViewSet(
-    viewsets.ModelViewSet
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
 ):
     queryset = Ticket.objects.all()
     authentication_classes = (JWTAuthentication,)
@@ -288,9 +596,37 @@ def get_validated_data(query_params) -> tuple:
 
 
 class FivePerMinuteUserThrottle(UserRateThrottle):
-    rate = '10/minute'
+    rate = '5/minute'
 
 
+@extend_schema(
+    responses={200: FlightListSerializer},
+    summary="Get list of right or transfer flights",
+    description="User can list of right or transfer "
+                "flights from one airport to another.",
+    methods=["GET"],
+    parameters=[
+        OpenApiParameter(
+            name='airport1',
+            description='Enter a source airport\'s id',
+            required=True,
+            type=int
+        ),
+        OpenApiParameter(
+            name='airport2',
+            description='Enter a destination airport\'s id',
+            required=True,
+            type=int
+        ),
+        OpenApiParameter(
+            name='date',
+            required=True,
+            type=OpenApiTypes.DATE,
+            location=OpenApiParameter.QUERY,
+            description='Enter a date.',
+        ),
+    ]
+)
 @api_view(["GET"])
 @throttle_classes([FivePerMinuteUserThrottle])
 def get_transfer_ways(request, *args, **kwargs):
