@@ -23,7 +23,7 @@ router.register("tickets", TicketViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path("get_ways/", get_transfer_ways, name="get_ways"),
+    path("get-ways/", get_transfer_ways, name="get-trasfer-ways"),
 ]
 
 app_name = "api_airlines"
