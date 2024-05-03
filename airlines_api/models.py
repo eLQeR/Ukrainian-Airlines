@@ -105,7 +105,7 @@ class Passenger(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_created=True, auto_now_add=True)
     user = models.ForeignKey(to=get_user_model(), on_delete=models.DO_NOTHING, related_name="orders")
-
+    is_cancelled = models.BooleanField(default=False)
     def __str__(self):
         return f"{self.created_at} - {self.user}"
 
