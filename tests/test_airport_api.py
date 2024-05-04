@@ -26,7 +26,7 @@ class UserApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         actors_full_names = [
             airport["name"] + " - " + airport["closest_big_city"]
-            for airport in response.data
+            for airport in response.data["results"]
             ]
         self.assertEqual(
             actors_full_names, ["Georginia - Milan", "Kean - Paris"]
@@ -37,9 +37,9 @@ class UserApiTests(TestCase):
 
         response = self.client.get("/api/airlines/airports/?city=paris&name=kean")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data),  1)
+        self.assertEqual(len(response.data["results"]),  1)
 
-        self.assertEqual(response.data, AirportSerializer([self.airport], many=True).data)
+        self.assertEqual(response.data["results"], AirportSerializer([self.airport], many=True).data)
 
     def test_retrieve_airport(self):
         airport2 = Airport.objects.create(name="Lasam", closest_big_city="Leon")

@@ -41,7 +41,7 @@ class AuthenticatedUserApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         routes = Route.objects.all()
         self.assertEqual(
-            response.data, RouteListSerializer(routes, many=True).data
+            response.data["results"], RouteListSerializer(routes, many=True).data
         )
 
     def test_filtered_routes_by_source(self):
@@ -49,10 +49,10 @@ class AuthenticatedUserApiTests(TestCase):
 
         response = self.client.get(f"{ROUTE_URL}?source_id=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data, RouteListSerializer(Route.objects.filter(source_id=1), many=True).data)
+        self.assertEqual(len(response.data["results"]), 2)
+        self.assertEqual(response.data["results"], RouteListSerializer(Route.objects.filter(source_id=1), many=True).data)
         response = self.client.get(f"{ROUTE_URL}?source_id={airport_with_no_routes.id}")
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data["results"]), 0)
 
     def test_filtered_routes_by_destination(self):
         airport_with_no_routes = Airport.objects.create(name="Lasam", closest_big_city="Leon")
@@ -60,10 +60,10 @@ class AuthenticatedUserApiTests(TestCase):
         response = self.client.get(f"{ROUTE_URL}?destination_id=4")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data, RouteListSerializer(Route.objects.filter(destination_id=4), many=True).data)
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"], RouteListSerializer(Route.objects.filter(destination_id=4), many=True).data)
         response = self.client.get(f"{ROUTE_URL}?destination_id={airport_with_no_routes.id}")
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data["results"]), 0)
 
     def test_get_route(self):
         response = self.client.get(f"{ROUTE_URL}1/")
@@ -94,7 +94,7 @@ class AuthenticatedUserApiTests(TestCase):
             },
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertRaises(ObjectDoesNotExist, Route.objects.get, source=5)
+        self.assertRaises(ObjectDoesNotExist, Route.objects.get, source_id=5)
 
     def test_delete_route_forbidden(self):
         response = self.client.delete(

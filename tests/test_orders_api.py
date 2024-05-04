@@ -126,7 +126,7 @@ class AuthenticatedUserApiTests(TestCase):
         response = self.client.get(ORDER_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data["results"]), 0)
 
     def test_get_created_orders(self):
         for _ in range(3):
@@ -135,8 +135,8 @@ class AuthenticatedUserApiTests(TestCase):
         response = self.client.get(ORDER_URL)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 3)
-        self.assertEqual(response.data, OrderListSerializer(orders, many=True).data)
+        self.assertEqual(len(response.data["results"]), 3)
+        self.assertEqual(response.data["results"], OrderListSerializer(orders, many=True).data)
 
     def test_create_order(self):
         order_count = Order.objects.filter(user=self.user).count()
@@ -158,8 +158,8 @@ class AuthenticatedUserApiTests(TestCase):
         response = self.client.get(ORDER_URL, self.data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
-        self.assertNotIn(OrderSerializer(order, many=False).data, response.data)
+        self.assertEqual(len(response.data["results"]), 0)
+        self.assertNotIn(OrderSerializer(order, many=False).data, response.data["results"])
 
     def test_create_order_with_another_user(self):
         user = User.objects.create_user(

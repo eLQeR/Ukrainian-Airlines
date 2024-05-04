@@ -8,6 +8,7 @@ from rest_framework import mixins, viewsets, generics, status
 from rest_framework.decorators import api_view, throttle_classes, action, permission_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle
@@ -44,6 +45,12 @@ from airlines_api.serializers import (
 )
 
 
+class MediumResultsSetPagination(PageNumberPagination):
+    page_size = 15
+    page_size_query_param = 'page_size'
+    max_page_size = 15
+
+
 @extend_schema_view(
     list=extend_schema(
         summary="Get list of your orders",
@@ -73,6 +80,7 @@ class OrderViewSet(
     serializer_class = OrderSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAuthenticated,)
+    pagination_class = MediumResultsSetPagination
 
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user)
@@ -124,6 +132,7 @@ class AirportViewSet(
     serializer_class = AirportSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = MediumResultsSetPagination
 
     def get_queryset(self):
         queryset = self.queryset
@@ -216,6 +225,7 @@ class AirplaneViewSet(
     serializer_class = AirplaneSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = MediumResultsSetPagination
 
     def get_queryset(self):
         queryset = self.queryset
@@ -259,6 +269,7 @@ class FlightViewSet(
     serializer_class = FlightSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = MediumResultsSetPagination
 
     @extend_schema(
         summary="Get taken tickets of flight",
@@ -483,6 +494,7 @@ class RouteViewSet(
     serializer_class = RouteSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = MediumResultsSetPagination
 
     def get_serializer_class(self):
         if self.action == "list":

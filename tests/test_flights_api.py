@@ -81,8 +81,8 @@ class AuthenticatedUserApiTests(TestCase):
     def test_get_flights(self):
         response = self.client.get(FLIGHT_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        for i in range(len(response.data)):
-            flight = response.data[i]
+        for i in range(len(response.data["results"])):
+            flight = response.data["results"][i]
             self.assertEqual(
                 flight['id'], i + 1
             )
@@ -104,13 +104,13 @@ class AuthenticatedUserApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         flights = get_annotated_flights(Flight.objects.all())
 
-        self.assertEqual(response.data, FlightListSerializer(flights, many=True).data)
+        self.assertEqual(response.data["results"], FlightListSerializer(flights, many=True).data)
 
     def test_filtered_flights_by_route(self):
         response = self.client.get(f"{FLIGHT_URL}?route=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            response.data,
+            response.data["results"],
             FlightListSerializer(
                 get_annotated_flights(Flight.objects.filter(route_id=1)), many=True
             ).data
@@ -120,7 +120,7 @@ class AuthenticatedUserApiTests(TestCase):
         response = self.client.get(f"{FLIGHT_URL}?departure_date=2024-04-11")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            response.data,
+            response.data["results"],
             FlightListSerializer(
                 get_annotated_flights(Flight.objects.filter(departure_time__date="2024-04-11")), many=True
             ).data
