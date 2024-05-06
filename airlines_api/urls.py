@@ -1,4 +1,3 @@
-
 from django.urls import path, include
 from rest_framework import routers
 
@@ -22,7 +21,7 @@ router.register("tickets", TicketViewSet)
 
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
     path("get-ways/", get_transfer_ways, name="get-trasfer-ways"),
 ]
 

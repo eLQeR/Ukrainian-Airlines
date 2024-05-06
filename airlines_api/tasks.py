@@ -12,5 +12,3 @@ def complete_flight():
         if task.departure_time < now:
             task.is_completed = True
             task.save()
-
-

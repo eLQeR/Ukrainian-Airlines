@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
                 "write_only": True,
                 "min_length": 5,
                 "max_length": 18,
-                "allow_blank": True
+                "allow_blank": True,
             }
         }
 
