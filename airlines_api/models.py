@@ -60,7 +60,9 @@ class Airplane(models.Model):
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
     airplane_type = models.ForeignKey(
-        to=AirplaneType, on_delete=models.CASCADE, related_name="airplanes"
+        to=AirplaneType,
+        on_delete=models.CASCADE,
+        related_name="airplanes"
     )
     image = models.ImageField(
         upload_to=create_airplane_image_path,
@@ -106,9 +108,13 @@ class Flight(models.Model):
     airplane = models.ForeignKey(
         to=Airplane, on_delete=models.CASCADE, related_name="flights"
     )
+    crews = models.ManyToManyField(
+        to=Crew,
+        blank=True,
+        related_name="flights"
+    )
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
-    crews = models.ManyToManyField(to=Crew, blank=True)
     is_completed = models.BooleanField(default=False)
 
     def __str__(self):
