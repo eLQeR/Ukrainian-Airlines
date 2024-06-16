@@ -70,7 +70,7 @@ class MediumResultsSetPagination(PageNumberPagination):
         description="User can get a certain his order.",
     ),
     create=extend_schema(
-        summary="Get a certain order",
+        summary="Create a certain order",
         description="User can create an order.",
     ),
     cancel_order=extend_schema(
