@@ -5,7 +5,7 @@ services:
     env_file:
       - .env
     ports:
-      - "8000:8000"
+      - "80:8000"
     command: >
       sh -c "python manage.py wait_for_db && 
             python manage.py migrate &&
@@ -27,6 +27,8 @@ services:
 
   redis:
     image: "redis:alpine"
+    ports:
+      - "6379:6379"
 
   celery:
     build:
