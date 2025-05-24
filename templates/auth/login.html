@@ -1,0 +1,64 @@
+{% extends "../base.html" %}
+
+{% load static %}
+
+{% block title %}Login - CiaoCioHub{% endblock %}
+
+{% block content %}
+<section class="container mx-auto py-12">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Login to CiaoCioHub</h2>
+        <form id="login-form">
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700">Username</label>
+                <input type="text" name="username" id="username" class="w-full border-gray-300 rounded-lg p-2 mt-2" required>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700">Password</label>
+                <input type="password" name="password" id="password" class="w-full border-gray-300 rounded-lg p-2 mt-2" required>
+            </div>
+            <p id="login-error" class="text-red-600 text-sm hidden"></p>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">Login</button>
+        </form>
+        <p class="mt-4 text-center text-sm text-gray-600">Don't have an account? <a href="{% url 'frontend:register' %}" class="text-indigo-600 hover:underline">Register</a></p>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginForm = document.getElementById('login-form');
+        const loginError = document.getElementById('login-error');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Запобігаємо стандартному відправленню форми
+
+            const formData = {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+            };
+
+            try {
+                const response = await fetch('/api/v1/users/login/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(formData),
+                });
+
+                if (response.ok) {
+                    window.location.href = '/'; // Редірект на головну сторінку
+                } else {
+                    const errorData = await response.json();
+                    loginError.textContent = errorData.error || 'Login failed';
+                    loginError.classList.remove('hidden');
+                }
+            } catch (error) {
+                loginError.textContent = 'An error occurred. Please try again.';
+                loginError.classList.remove('hidden');
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CiaoCioHub{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+</head>
+<body class="bg-gray-50 flex flex-col min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/static" class="text-2xl font-bold text-indigo-600">CiaoCioHub</a>
+            <div class="space-x-4">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'frontend:login' %}" class="text-gray-700 hover:text-indigo-600">Profile</a>
+                    <button 
+                        id="logout-button" 
+                        class="text-gray-700 hover:text-indigo-600">
+                        Logout
+                    </button>
+                {% else %}
+                    <a href="{% url 'frontend:login' %}" class="text-gray-700 hover:text-indigo-600">Login</a>
+                    <a href="{% url 'frontend:register' %}" class="text-gray-700 hover:text-indigo-600">Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 py-6">
+        <div class="container mx-auto text-center text-gray-400">
+            &copy; 2025 CiaoCioHub. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logoutButton = document.getElementById('logout-button');
+
+            if (logoutButton) {
+                logoutButton.addEventListener('click', async () => {
+                    try {
+                        const response = await fetch('/api/v1/users/logout/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}' // Django CSRF токен
+                            },
+                            credentials: 'include', // Додає кукі в запит
+                        });
+
+                        if (response.ok) {
+                            // Якщо логаут успішний, редіректимо на головну
+                            window.location.href = '/';
+                        } else {
+                            console.error('Logout failed:', response.status);
+                        }
+                    } catch (error) {
+                        console.error('Error during logout:', error);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

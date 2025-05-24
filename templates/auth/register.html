@@ -1,0 +1,102 @@
+{% extends "../base.html" %}
+
+{% load static %}
+
+{% block title %}Register - CiaoCioHub{% endblock %}
+
+{% block content %}
+<section class="container mx-auto py-12">
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">Register on CiaoCioHub</h2>
+        <form id="register-form">
+            <div class="mb-4">
+                <label for="username" class="block text-gray-700">Username</label>
+                <input type="text" name="username" id="username" class="w-full border-gray-300 rounded-lg p-2 mt-2" required>
+                <p id="username-error" class="text-red-600 text-sm hidden"></p>
+            </div>
+            <div class="mb-4">
+                <label for="email" class="block text-gray-700">Email</label>
+                <input type="email" name="email" id="email" class="w-full border-gray-300 rounded-lg p-2 mt-2" required>
+                <p id="email-error" class="text-red-600 text-sm hidden"></p>
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-gray-700">Password</label>
+                <input type="password" name="password" id="password" class="w-full border-gray-300 rounded-lg p-2 mt-2" required>
+                <p id="password-error" class="text-red-600 text-sm hidden"></p>
+            </div>
+            <div class="mb-4">
+                <label for="confirm_password" class="block text-gray-700">Confirm Password</label>
+                <input type="password" name="confirm_password" id="confirm_password" class="w-full border-gray-300 rounded-lg p-2 mt-2" required>
+                <p id="confirm-password-error" class="text-red-600 text-sm hidden"></p>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700">Register</button>
+        </form>
+    </div>
+</section>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const registerForm = document.getElementById('register-form');
+        const errorFields = {
+            username: document.getElementById('username-error'),
+            email: document.getElementById('email-error'),
+            password: document.getElementById('password-error'),
+            confirm_password: document.getElementById('confirm-password-error')
+        };
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Запобігаємо стандартному відправленню форми
+
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                confirm_password: document.getElementById('confirm_password').value,
+            };
+
+            // Скидання помилок
+            Object.values(errorFields).forEach(field => {
+                field.textContent = '';
+                field.classList.add('hidden');
+            });
+
+            try {
+                const response = await fetch('/api/v1/users/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}' // Додано CSRF токен
+                    },
+                    body: JSON.stringify(formData), // Перетворення об'єкта у JSON
+                });
+
+                if (response.ok) {
+                    // Якщо реєстрація успішна, перенаправляємо користувача на головну
+                    window.location.href = '/';
+                } else if (response.status === 400) {
+                    const errorData = await response.json();
+
+                    // Виведення помилок
+                    if (errorData) {
+                        Object.keys(errorData).forEach(field => {
+                            if (errorFields[field]) {
+                                errorFields[field].textContent = errorData[field]
+                                    .map(err => err.string || err) // Отримуємо текст помилки
+                                    .join(' '); // З'єднуємо всі помилки через пробіл
+                                errorFields[field].classList.remove('hidden');
+                            }
+                        });
+                    } else {
+                        alert('An error occurred. Please try again.');
+                    }
+                } else {
+                    alert('Unexpected error occurred. Please try again later.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send the request. Please check your network connection.');
+            }
+        });
+    });
+</script>
+
+{% endblock %}

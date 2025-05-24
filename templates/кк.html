@@ -1,0 +1,22 @@
+
+<script>
+    const socket = new WebSocket('ws://1579-178-92-202-248.ngrok-free.app/'); // Замість 'abcd-1234' вкажи свій ngrok URL
+
+socket.onopen = () => {
+    console.log('WebSocket підключено');
+    // Можеш відправити повідомлення на сервер
+    socket.send('Hello Server');
+};
+
+socket.onmessage = (event) => {
+    console.log('Повідомлення від сервера: ', event.data);
+};
+
+socket.onclose = () => {
+    console.log('WebSocket закрито');
+};
+
+socket.onerror = (error) => {
+    console.error('Помилка WebSocket:', error);
+};
+</script>

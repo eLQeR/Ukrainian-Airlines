@@ -28,6 +28,7 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/airlines/", include("airlines_api.urls", namespace="airlines")),
     path("api/user/", include("user.urls", namespace="user")),
+    path('api/v1/chats/', include('chat.urls')),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/doc/swagger/",

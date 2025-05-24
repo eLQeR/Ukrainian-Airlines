@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitcoin AI Caller</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css">
+    <script>
+        async function makeCall() {
+            const phoneNumber = document.getElementById("phone_number").value;
+            const response = await fetch(`http://localhost:8000/audio/api-call/?phone_number=${phoneNumber}`);
+            const data = await response.json();
+
+            if (data.success) {
+                alert("Call started! SID: " + data.call_sid);
+            } else {
+                alert("Error: " + data.error);
+            }
+        }
+    </script>
+</head>
+<body style="font-family: 'Arial', sans-serif; text-align: center; padding: 50px;">
+    <h2>📞 Bitcoin AI Caller</h2>
+    <input type="text" id="phone_number" placeholder="Enter phone number" style="padding: 10px; margin: 10px;">
+    <button onclick="makeCall()" style="padding: 10px 20px;">Call Now</button>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Form Filler</title>
+    <script defer src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{#    <script defer src="{% static 'form_filler.js' %}"></script>#}
+</head>
+<body>
+    <div id="seriesCodeContainer">
+        <table id="seriesTableContainer">
+            <tbody>
+                <tr>
+                    <td>
+                        <span class="seriesOptLabel">Front Core</span>
+                        <select name="Front Core">
+                            <option val=""></option>
+                            <option value="FRTC20">3/4" NAUF Industrial Particleboard CARB Compliant</option>
+                        </select>
+                    </td>
+                    <td>
+                        <span class="seriesOptLabel">Toe Kicks</span>
+                        <select name="Toe Kicks">
+                            <option val=""></option>
+                            <option value="TK010">Integral</option>
+                            <option value="TK020">Integral with Isolator Block</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="seriesOptLabel">Front Material</span>
+                        <select name="Front Material ">
+                            <option val=""></option>
+                            <option value="FRTM25">VGS HPL WA-Formica-Pionite-Nevamar/Std Inter Color</option>
+                        </select>
+                    </td>
+                    <td>
+                        <span class="seriesOptLabel">Drawer Box Type</span>
+                        <select name="Drawer Box Type">
+                            <option val=""></option>
+                            <option value="DRWR20">3/4" Plywood CL20 Liner w/ 1/4" MDF bottom</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <span class="seriesOptLabel">Hinge Options</span>
+                        <select name="Hinge Options">
+                            <option val=""></option>
+                            <option value="HNG30">SA-141 120 Concealed Hinges</option>
+                        </select>
+                    </td>
+                    <td>
+                        <span class="seriesOptLabel">Pulls</span>
+                        <select name="Pulls">
+                            <option val=""></option>
+                            <option value="PULL21">Stainless Steel Collection 128mm-2015</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <button id="fillForm">Заповнити форму</button>
+</body>
+</html>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("fillForm").addEventListener("click", function () {
+        fetch("/api/form-data/") // Отримати дані форми
+            .then(response => response.json())
+            .then(data => {
+                let newWindow = window.open("http://bid.stevensind.com/", "_blank");
+
+                if (!newWindow) {
+                    alert("Будь ласка, дозвольте відкриття нового вікна.");
+                    return;
+                }
+
+                // Чекати, поки нове вікно завантажиться
+                newWindow.onload = function () {
+                    // Функція для емуляції введення тексту
+                    function simulateTyping(input, text) {
+                        input.focus();
+                        input.value = text;
+                        input.dispatchEvent(new Event('input', { bubbles: true })); // Тригериуємо подію 'input'
+                        input.dispatchEvent(new Event('change', { bubbles: true })); // Тригериуємо подію 'change'
+                    }
+
+                    // Зміна конкретного поля (prjname) через емуляцію введення
+                    let inputElement = newWindow.document.querySelector('input[itemid="prjname"]');
+                    console.log('Поле prjname');
+                    console.log(inputElement)
+                    if (inputElement) {
+                        simulateTyping(inputElement, "Текст для поля prjname"); // Встановлюємо значення для цього поля
+                    } else {
+                        console.log('Поле prjname не знайдено на новій сторінці.');
+                    }
+                };
+            })
+            .catch(error => console.error("Помилка отримання даних:", error));
+    });
+});
+
+</script>
