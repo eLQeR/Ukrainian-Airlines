@@ -11,14 +11,19 @@ a search for flights from one airport to another with transfers
 using an optimized <span style="color:green">Dijkstra</span> algorithm limited to only one transfer.
 ```api/airlines/get-ways/```
 
+### Deploy
+
+Ukrainian-Airlines are hosted on EC2 AWS instance [web-site](http://51.20.64.25/api/doc/swagger/)
+
 
 ### Technologies that was used:
 1. Django Rest Framework (For managing api views)
 2. Postgresql (As main database)
 3. Celery (For managing completing flights that have departured)
 4. Redis (As celery broker)
-5. Docker-compose (For developing the microservices)
+5. Docker-compose (For managing the microservices)
 6. Swagger documentation
+7. AWS
 
 ### How to run:
 - Copy .env.sample -> .env and populate with all required data
