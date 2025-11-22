@@ -31,7 +31,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     "51.20.64.25",
-    "127.0.0.1"
+    "127.0.0.1",
+    "10.0.2.2"
 ]
 
 # Application definition
@@ -163,8 +164,8 @@ SPECTACULAR_SETTINGS = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
-    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=30),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=3000),
 }
 
 # BROKER_URL = os.environ["CELERY_BROKER_URL"]

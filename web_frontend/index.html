@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ukrainian Airlines - Пошук рейсів</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        select, input, button {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            grid-column: 1 / -1;
+            margin-top: 20px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .flight-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .flight-card:hover {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transform: translateY(-5px);
+        }
+
+        .flight-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .route {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .flight-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .book-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .book-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .api-info {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-online {
+            background: #28a745;
+        }
+
+        .status-offline {
+            background: #dc3545;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .flight-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛫 Ukrainian Airlines</h1>
+            <p>Знайдіть найкращі рейси для вашої подорожі</p>
+        </div>
+
+        <div class="api-info">
+            <div class="api-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="statusText">Перевіряємо з'єднання з API...</span>
+            </div>
+            <p><strong>API Endpoint:</strong> http://localhost:8000/api/airlines/</p>
+            <p><strong>Swagger документація:</strong> <a href="http://localhost:8000/api/doc/swagger/" target="_blank">http://localhost:8000/api/doc/swagger/</a></p>
+        </div>
+
+        <div class="search-card">
+            <h2>Пошук рейсів</h2>
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="fromAirport">Звідки</label>
+                    <select id="fromAirport" required>
+                        <option value="">Оберіть аеропорт відправлення</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="toAirport">Куди</label>
+                    <select id="toAirport" required>
+                        <option value="">Оберіть аеропорт прибуття</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="departureDate">Дата відправлення</label>
+                    <input type="date" id="departureDate" required>
+                </div>
+                
+                <button type="submit" class="search-btn">🔍 Знайти рейси</button>
+            </form>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <h2>Результати пошуку</h2>
+            <div id="flightResults"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/airlines';
+        
+        // Check API status
+        async function checkApiStatus() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            
+            try {
+                const response = await fetch(`${API_BASE}/airports/`);
+                if (response.ok) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    statusText.textContent = 'API онлайн - готово до роботи!';
+                    loadAirports();
+                } else {
+                    throw new Error('API відповів з помилкою');
+                }
+            } catch (error) {
+                statusIndicator.className = 'status-indicator status-offline';
+                statusText.textContent = 'API недоступний. Переконайтесь, що Django сервер запущений.';
+                console.error('API connection failed:', error);
+            }
+        }
+
+        // Load airports for dropdowns
+        async function loadAirports() {
+            try {
+                const response = await fetch(`${API_BASE}/airports/`);
+                if (!response.ok) throw new Error('Failed to fetch airports');
+                
+                const data = await response.json();
+                const airports = data.results || data;
+                
+                const fromSelect = document.getElementById('fromAirport');
+                const toSelect = document.getElementById('toAirport');
+                
+                airports.forEach(airport => {
+                    const option1 = new Option(`${airport.name} (${airport.closest_big_city})`, airport.id);
+                    const option2 = new Option(`${airport.name} (${airport.closest_big_city})`, airport.id);
+                    fromSelect.add(option1);
+                    toSelect.add(option2);
+                });
+            } catch (error) {
+                console.error('Error loading airports:', error);
+                document.getElementById('flightResults').innerHTML = 
+                    '<div class="error">Помилка завантаження аеропортів. Перевірте підключення до API.</div>';
+            }
+        }
+
+        // Search flights
+        async function searchFlights(fromAirport, toAirport, date) {
+            const resultsSection = document.getElementById('resultsSection');
+            const flightResults = document.getElementById('flightResults');
+            
+            resultsSection.style.display = 'block';
+            flightResults.innerHTML = '<div class="loading">🔍 Шукаємо рейси...</div>';
+            
+            try {
+                // First try direct flights
+                const directResponse = await fetch(
+                    `${API_BASE}/flights/?source_airport=${fromAirport}&destination_airport=${toAirport}&departure_date=${date}`
+                );
+                
+                if (directResponse.ok) {
+                    const directData = await directResponse.json();
+                    const directFlights = directData.results || directData;
+                    
+                    if (directFlights.length > 0) {
+                        displayFlights(directFlights, 'Прямі рейси');
+                        return;
+                    }
+                }
+                
+                // If no direct flights, try transfer flights
+                const transferResponse = await fetch(
+                    `${API_BASE}/get-ways/?airport1=${fromAirport}&airport2=${toAirport}&date=${date}`
+                );
+                
+                if (transferResponse.ok) {
+                    const transferData = await transferResponse.json();
+                    if (transferData.data && transferData.data.length > 0) {
+                        displayTransferFlights(transferData.data);
+                    } else {
+                        flightResults.innerHTML = '<div class="error">На жаль, рейсів на цю дату не знайдено. Спробуйте іншу дату або маршрут.</div>';
+                    }
+                } else {
+                    throw new Error('Помилка пошуку рейсів');
+                }
+                
+            } catch (error) {
+                console.error('Search error:', error);
+                flightResults.innerHTML = '<div class="error">Помилка пошуку рейсів. Перевірте підключення до API.</div>';
+            }
+        }
+
+        // Display direct flights
+        function displayFlights(flights, title) {
+            const flightResults = document.getElementById('flightResults');
+            
+            let html = `<h3>${title}</h3>`;
+            
+            flights.forEach(flight => {
+                const departureTime = new Date(flight.departure_time).toLocaleString('uk-UA');
+                const arrivalTime = new Date(flight.arrival_time).toLocaleString('uk-UA');
+                
+                html += `
+                    <div class="flight-card">
+                        <div class="flight-header">
+                            <div class="route">${flight.route.source} → ${flight.route.destination}</div>
+                            <div class="price">Доступно: ${flight.tickets_avaliable} місць</div>
+                        </div>
+                        
+                        <div class="flight-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Відправлення</div>
+                                <div class="detail-value">${departureTime}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Прибуття</div>
+                                <div class="detail-value">${arrivalTime}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Час в дорозі</div>
+                                <div class="detail-value">${flight.time_of_flight}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Літак</div>
+                                <div class="detail-value">${flight.airplane}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Відстань</div>
+                                <div class="detail-value">${flight.route.distance} км</div>
+                            </div>
+                        </div>
+                        
+                        <button class="book-btn" onclick="bookFlight(${flight.id})">
+                            ✈️ Забронювати рейс
+                        </button>
+                    </div>
+                `;
+            });
+            
+            flightResults.innerHTML = html;
+        }
+
+        // Display transfer flights
+        function displayTransferFlights(transferRoutes) {
+            const flightResults = document.getElementById('flightResults');
+            
+            let html = '<h3>Рейси з пересадками</h3>';
+            
+            transferRoutes.forEach((route, index) => {
+                html += `
+                    <div class="flight-card">
+                        <div class="flight-header">
+                            <div class="route">Маршрут ${index + 1} (${route.length} сегмент${route.length > 1 ? 'и' : ''})</div>
+                            <div class="price">Загальна відстань: ${route.reduce((sum, seg) => sum + seg.route.distance, 0)} км</div>
+                        </div>
+                `;
+                
+                route.forEach((segment, segIndex) => {
+                    const departureTime = new Date(segment.departure_time).toLocaleString('uk-UA');
+                    const arrivalTime = new Date(segment.arrival_time).toLocaleString('uk-UA');
+                    
+                    html += `
+                        <div style="margin: 15px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                            <strong>Сегмент ${segIndex + 1}: ${segment.route.source} → ${segment.route.destination}</strong>
+                            <div class="flight-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Відправлення</div>
+                                    <div class="detail-value">${departureTime}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Прибуття</div>
+                                    <div class="detail-value">${arrivalTime}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Час в дорозі</div>
+                                    <div class="detail-value">${segment.time_of_flight}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Літак</div>
+                                    <div class="detail-value">${segment.airplane}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                        <button class="book-btn" onclick="bookTransferRoute(${JSON.stringify(route).replace(/"/g, '&quot;')})">
+                            ✈️ Забронювати весь маршрут
+                        </button>
+                    </div>
+                `;
+            });
+            
+            flightResults.innerHTML = html;
+        }
+
+        // Book flight function
+        function bookFlight(flightId) {
+            alert(`Бронювання рейсу ${flightId}.\n\nДля повної функціональності бронювання потрібна авторизація користувача.\nЗараз це демо-версія інтерфейсу.`);
+        }
+
+        // Book transfer route function
+        function bookTransferRoute(route) {
+            alert(`Бронювання маршруту з ${route.length} сегментами.\n\nДля повної функціональності бронювання потрібна авторизація користувача.\nЗараз це демо-версія інтерфейсу.`);
+        }
+
+        // Form submission handler
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fromAirport = document.getElementById('fromAirport').value;
+            const toAirport = document.getElementById('toAirport').value;
+            const departureDate = document.getElementById('departureDate').value;
+            
+            if (!fromAirport || !toAirport || !departureDate) {
+                alert('Будь ласка, заповніть всі поля');
+                return;
+            }
+            
+            if (fromAirport === toAirport) {
+                alert('Аеропорт відправлення та прибуття не можуть бути однаковими');
+                return;
+            }
+            
+            searchFlights(fromAirport, toAirport, departureDate);
+        });
+
+        // Set minimum date to today
+        document.getElementById('departureDate').min = new Date().toISOString().split('T')[0];
+
+        // Initialize
+        checkApiStatus();
+    </script>
+</body>
+</html>

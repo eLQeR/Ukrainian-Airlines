@@ -49,11 +49,11 @@ class ChatView(APIView):
         )[0]
 
         # Create a chat with memory for every user that visit URL
-        user_chat_id = str(uuid.uuid4())
+        # user_chat_id = str(uuid.uuid4())
         user_chat = Chat.objects.get_or_create(
             user=None,
             system_prompt=template_chat.system_prompt,
-            chat_id=user_chat_id
+            chat_id=chat_id
         )[0]
 
         messages = user_chat.messages.all().order_by('timestamp')

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/app/src/main/java/com/example/ukrainianairlines/data/model/PaginatedOrders.kt">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/app/src/main/java/com/example/ukrainianairlines/data/model/PaginatedOrders.kt" />
+              <option name="updatedContent" value="package com.example.ukrainianairlines.data.model&#10;&#10;data class PaginatedOrders(&#10;    val count: Int,&#10;    val next: String?,&#10;    val previous: String?,&#10;    val results: List&lt;Order&gt;&#10;)&#10;" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

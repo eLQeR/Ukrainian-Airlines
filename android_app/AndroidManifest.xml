@@ -1,0 +1,10 @@
+<!-- ...existing code... -->
+<application
+    android:enableOnBackInvokedCallback="true"
+    <!-- ...existing code... -->
+>
+    <!-- ...existing code... -->
+    <activity android:name=".ui.screens.ChatActivity" />
+    <!-- ...existing code... -->
+</application>
+<!-- ...existing code... -->
