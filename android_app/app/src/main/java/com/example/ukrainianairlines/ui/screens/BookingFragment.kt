@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.NumberPicker
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -26,6 +27,8 @@ class BookingFragment : Fragment() {
     private lateinit var emailInput: EditText
     private lateinit var bookButton: Button
     private lateinit var progressBar: ProgressBar
+    private lateinit var rowPicker: NumberPicker
+    private lateinit var seatPicker: NumberPicker
 
     private var selectedFlightId: Int = 0
 
@@ -48,6 +51,12 @@ class BookingFragment : Fragment() {
         emailInput = root.findViewById(R.id.email_input)
         bookButton = root.findViewById(R.id.book_button)
         progressBar = root.findViewById(R.id.progress_bar)
+        rowPicker = root.findViewById(R.id.row_picker)
+        seatPicker = root.findViewById(R.id.seat_picker)
+        rowPicker.minValue = 1
+        rowPicker.maxValue = 10
+        seatPicker.minValue = 1
+        seatPicker.maxValue = 6
 
         setupUI()
         observeViewModel()
@@ -91,38 +100,20 @@ class BookingFragment : Fragment() {
             return
         }
 
-        // Create passenger
         val passenger = Passenger(
             first_name = firstName,
             last_name = lastName
         )
 
-        // Create ticket (simplified - in real app you'd select seat)
+        val selectedRow = rowPicker.value
+        val selectedSeat = seatPicker.value
         val ticket = Ticket(
-            row = 1,
-            seat = 1,
-            flight = com.example.ukrainianairlines.data.model.Flight(
-                id = selectedFlightId,
-                route = com.example.ukrainianairlines.data.model.Route(
-                    id = 1,
-                    source = com.example.ukrainianairlines.data.model.Airport(1, "Source", "City"),
-                    destination = com.example.ukrainianairlines.data.model.Airport(2, "Dest", "City"),
-                    distance = 100.0f
-                ),
-                airplane = com.example.ukrainianairlines.data.model.Airplane(
-                    id = 1,
-                    name = "Airplane",
-                    rows = 10,
-                    seats_in_row = 6,
-                    airplane_type = com.example.ukrainianairlines.data.model.AirplaneType(1, "Type")
-                ),
-                departure_time = "2023-01-01T10:00:00Z",
-                arrival_time = "2023-01-01T12:00:00Z"
-            ),
+            row = selectedRow,
+            seat = selectedSeat,
+            flight = selectedFlightId,
             passenger = passenger
         )
 
-        // Create order
         val order = Order(
             tickets = listOf(ticket)
         )

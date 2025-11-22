@@ -12,8 +12,10 @@ import com.example.ukrainianairlines.data.model.Order
 import java.text.SimpleDateFormat
 import java.util.*
 
-class OrdersAdapter(private val onOrderClick: (Order) -> Unit) :
-    ListAdapter<Order, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
+class OrdersAdapter(
+    private val flights: Map<Int, com.example.ukrainianairlines.data.model.Flight>,
+    private val onOrderClick: (Order) -> Unit
+) : ListAdapter<Order, OrdersAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     private val dateFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
 
@@ -50,7 +52,8 @@ class OrdersAdapter(private val onOrderClick: (Order) -> Unit) :
             // Flight route - show first ticket's route if available
             if (order.tickets.isNotEmpty()) {
                 val ticket = order.tickets.first()
-                val route = ticket.flight?.route
+                val flight = flights[ticket.flight]
+                val route = flight?.route
                 val source = when {
                     route?.source is Map<*, *> -> (route.source as Map<*, *>)["name"]?.toString()
                     route?.source is String -> route.source as String
@@ -61,7 +64,7 @@ class OrdersAdapter(private val onOrderClick: (Order) -> Unit) :
                     route?.destination is String -> route.destination as String
                     else -> "?"
                 }
-                flightRouteText.text = if (route != null) "$source 2 $destination" else "Flight not available"
+                flightRouteText.text = if (route != null) "$source → $destination" else "Flight not available"
             } else {
                 flightRouteText.text = "No tickets"
             }

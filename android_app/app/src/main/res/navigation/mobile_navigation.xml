@@ -11,6 +11,7 @@
         app:popUpTo="@id/mobile_navigation"
         app:popUpToInclusive="true" />
 
+    <!-- Main menu navigation fragments -->
     <fragment
         android:id="@+id/nav_search"
         android:name="com.example.ukrainianairlines.ui.screens.SearchFragment"
@@ -19,8 +20,10 @@
         <action
             android:id="@+id/action_nav_search_to_flightResultsFragment"
             app:destination="@id/flightResultsFragment" />
+        <action
+            android:id="@+id/action_nav_search_to_airportsFragment"
+            app:destination="@id/airportsFragment" />
     </fragment>
-
     <fragment
         android:id="@+id/nav_bookings"
         android:name="com.example.ukrainianairlines.ui.screens.BookingsFragment"
@@ -30,13 +33,27 @@
             android:id="@+id/action_nav_bookings_to_orderDetailFragment"
             app:destination="@id/orderDetailFragment" />
     </fragment>
-
     <fragment
         android:id="@+id/nav_profile"
         android:name="com.example.ukrainianairlines.ui.screens.ProfileFragment"
         android:label="@string/nav_profile"
         tools:layout="@layout/fragment_profile" />
+    <fragment
+        android:id="@+id/ordersFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.OrdersFragment"
+        android:label="Orders"
+        tools:layout="@layout/fragment_orders">
+        <action
+            android:id="@+id/action_ordersFragment_to_orderDetailFragment"
+            app:destination="@id/orderDetailFragment" />
+    </fragment>
 
+    <fragment
+        android:id="@+id/airportsFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.AirportsFragment"
+        android:label="Select Airport"
+        tools:layout="@layout/fragment_airports" />
+    <!-- Other fragments accessible via actions only -->
     <fragment
         android:id="@+id/flightResultsFragment"
         android:name="com.example.ukrainianairlines.ui.screens.FlightResultsFragment"
@@ -55,7 +72,6 @@
             android:id="@+id/action_flightResultsFragment_to_bookingFragment"
             app:destination="@id/bookingFragment" />
     </fragment>
-
     <fragment
         android:id="@+id/bookingFragment"
         android:name="com.example.ukrainianairlines.ui.screens.BookingFragment"
@@ -65,7 +81,6 @@
             android:name="flightId"
             app:argType="integer" />
     </fragment>
-
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.ukrainianairlines.ui.screens.LoginFragment"
@@ -87,5 +102,6 @@
             android:name="orderId"
             app:argType="integer" />
     </fragment>
+
 
 </navigation>

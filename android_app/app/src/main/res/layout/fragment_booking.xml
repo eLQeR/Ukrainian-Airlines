@@ -84,6 +84,33 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Row Picker -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Row"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="@style/TextAppearance.UkrainianAirlines.Body1" />
+                <NumberPicker
+                    android:id="@+id/row_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_gravity="center_horizontal" />
+
+                <!-- Seat Picker -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Seat"
+                    android:layout_marginTop="8dp"
+                    android:textAppearance="@style/TextAppearance.UkrainianAirlines.Body1" />
+                <NumberPicker
+                    android:id="@+id/seat_picker"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal" />
+
                 <!-- Book Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/book_button"

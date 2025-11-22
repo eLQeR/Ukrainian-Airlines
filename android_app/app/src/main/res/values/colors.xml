@@ -1,45 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary Colors (Kiwi Airlines inspired) -->
-    <color name="primary">#0052CC</color>
-    <color name="primary_dark">#003D99</color>
+    <!-- Primary Colors -->
+    <color name="primary">#1976D2</color>
+    <color name="primary_dark">#1565C0</color>
     <color name="primary_light">#4D7EFF</color>
     <color name="primary_variant">#001A4D</color>
-
+    <color name="colorPrimary">#1976D2</color>
+    <color name="colorPrimaryDark">#1565C0</color>
+    <color name="colorAccent">#FF9800</color>
+    <color name="colorWhite">#FFFFFF</color>
+    <color name="colorBlack">#000000</color>
     <!-- Secondary Colors -->
     <color name="secondary">#00A699</color>
     <color name="secondary_dark">#007A6B</color>
     <color name="secondary_light">#33B5A5</color>
     <color name="secondary_variant">#004D40</color>
-
     <!-- Background Colors -->
     <color name="background">#FFFFFF</color>
     <color name="surface">#FFFFFF</color>
     <color name="card_background">#FFFFFF</color>
-
     <!-- Text Colors -->
     <color name="text_primary">#212121</color>
     <color name="text_secondary">#757575</color>
     <color name="text_hint">#BDBDBD</color>
     <color name="text_on_primary">#FFFFFF</color>
     <color name="text_on_secondary">#FFFFFF</color>
-
     <!-- Status Colors -->
     <color name="error">#D32F2F</color>
     <color name="success">#388E3C</color>
     <color name="warning">#F57C00</color>
     <color name="info">#1976D2</color>
-
     <!-- Border Colors -->
     <color name="divider">#E0E0E0</color>
     <color name="border_light">#F5F5F5</color>
-
     <!-- Accent Colors -->
     <color name="accent">#FF6B35</color>
     <color name="highlight">#FFF3E0</color>
-
     <!-- Basic Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="transparent">#00000000</color>
 </resources>
+

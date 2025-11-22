@@ -12,7 +12,7 @@ import com.example.ukrainianairlines.data.model.Airport
 import com.example.ukrainianairlines.data.model.Route
 import com.example.ukrainianairlines.data.model.Ticket
 
-class TicketsAdapter : ListAdapter<Ticket, TicketsAdapter.TicketViewHolder>(TicketDiffCallback()) {
+class TicketsAdapter(private val flights: Map<Int, com.example.ukrainianairlines.data.model.Flight>) : ListAdapter<Ticket, TicketsAdapter.TicketViewHolder>(TicketDiffCallback()) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TicketViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ticket, parent, false)
         return TicketViewHolder(view)
@@ -30,7 +30,8 @@ class TicketsAdapter : ListAdapter<Ticket, TicketsAdapter.TicketViewHolder>(Tick
         fun bind(ticket: Ticket) {
             passengerNameText.text = "${ticket.passenger.first_name} ${ticket.passenger.last_name}"
             seatText.text = "Row ${ticket.row}, Seat ${ticket.seat}"
-            val route = ticket.flight?.route
+            val flight = flights[ticket.flight]
+            val route = flight?.route
             val source = when {
                 route?.source is Map<*, *> -> (route.source as Map<*, *>)["name"]?.toString()
                 route?.source is String -> route.source as String

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/ordersFragment"
+        android:icon="@drawable/ic_orders"
+        android:title="@string/orders" />
+    <item
+        android:id="@+id/flightResultsFragment"
+        android:icon="@drawable/ic_flight"
+        android:title="@string/flight_results" />
+    <item
+        android:id="@+id/bookingFragment"
+        android:icon="@drawable/ic_bookings"
+        android:title="@string/book_flight" />
+    <item
+        android:id="@+id/loginFragment"
+        android:icon="@drawable/ic_login"
+        android:title="@string/login" />
+    <item
+        android:id="@+id/registerFragment"
+        android:icon="@drawable/ic_register"
+        android:title="@string/register" />
+    <item
+        android:id="@+id/orderDetailFragment"
+        android:icon="@drawable/ic_orders"
+        android:title="@string/order_details" />
+</menu>
+

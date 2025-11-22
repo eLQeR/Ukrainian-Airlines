@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.ukrainianairlines.R
 import com.example.ukrainianairlines.data.model.Order
 import com.example.ukrainianairlines.ui.viewmodels.BookingViewModel
+import com.example.ukrainianairlines.ui.viewmodels.SearchViewModel
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -20,11 +21,13 @@ import java.util.*
 
 class OrderDetailFragment : Fragment() {
     private val bookingViewModel: BookingViewModel by viewModels()
+    private val searchViewModel: SearchViewModel by viewModels()
     private lateinit var orderIdText: TextView
     private lateinit var createdAtText: TextView
     private lateinit var statusText: TextView
     private lateinit var ticketsRecyclerView: RecyclerView
     private lateinit var ticketsAdapter: TicketsAdapter
+    private var flightsMap: Map<Int, com.example.ukrainianairlines.data.model.Flight> = emptyMap()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +43,7 @@ class OrderDetailFragment : Fragment() {
 
         setupRecyclerView()
         observeViewModel()
+        observeFlights()
         val orderId = arguments?.getInt("orderId") ?: 0
         bookingViewModel.loadOrder(orderId)
 
@@ -47,10 +51,20 @@ class OrderDetailFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        ticketsAdapter = TicketsAdapter()
+        ticketsAdapter = TicketsAdapter(flightsMap)
         ticketsRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = ticketsAdapter
+        }
+    }
+
+    private fun observeFlights() {
+        searchViewModel.flights.observe(viewLifecycleOwner) { flights ->
+            flightsMap = flights.associateBy { it.id }
+            ticketsAdapter = TicketsAdapter(flightsMap)
+            ticketsRecyclerView.adapter = ticketsAdapter
+            // Optionally re-submit current tickets list
+            bookingViewModel.currentOrder.value?.let { ticketsAdapter.submitList(it.tickets) }
         }
     }
 

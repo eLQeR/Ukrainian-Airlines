@@ -59,6 +59,15 @@ class SearchFragment : Fragment() {
             showDatePicker()
         }
 
+        // Add click listeners to open airport selection
+        fromAirportInput.setOnClickListener {
+            findNavController().navigate(R.id.action_nav_search_to_airportsFragment)
+        }
+
+        toAirportInput.setOnClickListener {
+            findNavController().navigate(R.id.action_nav_search_to_airportsFragment)
+        }
+
         searchButton.setOnClickListener {
             performSearch()
         }
@@ -147,6 +156,11 @@ class SearchFragment : Fragment() {
         val toAirport = selectedToAirport
         val departureDate = selectedDepartureDate
 
+        // Debug logging
+        android.util.Log.d("SearchFragment", "performSearch - fromAirport: $fromAirport")
+        android.util.Log.d("SearchFragment", "performSearch - toAirport: $toAirport")
+        android.util.Log.d("SearchFragment", "performSearch - departureDate: $departureDate")
+
         if (fromAirport == null || toAirport == null || departureDate == null) {
             Snackbar.make(requireView(), "Please fill all fields", Snackbar.LENGTH_SHORT).show()
             return
@@ -156,6 +170,8 @@ class SearchFragment : Fragment() {
             Snackbar.make(requireView(), "Please select different airports", Snackbar.LENGTH_SHORT).show()
             return
         }
+
+        android.util.Log.d("SearchFragment", "Searching flights: fromId=${fromAirport.id}, toId=${toAirport.id}, date=$departureDate")
 
         searchViewModel.searchFlights(
             sourceAirport = fromAirport.id,

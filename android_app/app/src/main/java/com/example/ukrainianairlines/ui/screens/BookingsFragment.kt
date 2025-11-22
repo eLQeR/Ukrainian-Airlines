@@ -13,11 +13,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.ukrainianairlines.R
 import com.example.ukrainianairlines.ui.viewmodels.BookingViewModel
+import com.example.ukrainianairlines.ui.viewmodels.SearchViewModel
 import com.google.android.material.snackbar.Snackbar
 
 class BookingsFragment : Fragment() {
-
     private val bookingViewModel: BookingViewModel by viewModels()
+    private val searchViewModel: SearchViewModel by viewModels()
     private lateinit var ordersRecyclerView: RecyclerView
     private lateinit var emptyStateText: TextView
     private lateinit var progressBar: ProgressBar
@@ -38,6 +39,7 @@ class BookingsFragment : Fragment() {
 
         setupRecyclerView()
         observeViewModel()
+        observeFlights()
         loadOrders()
         displayUserInfo()
 
@@ -45,7 +47,8 @@ class BookingsFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        ordersAdapter = OrdersAdapter { order ->
+        // Initially empty map, will be updated when flights are loaded
+        ordersAdapter = OrdersAdapter(emptyMap()) { order ->
             val bundle = Bundle().apply {
                 putInt("orderId", order.id ?: 0)
             }
@@ -55,6 +58,21 @@ class BookingsFragment : Fragment() {
         ordersRecyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = ordersAdapter
+        }
+    }
+
+    private fun observeFlights() {
+        searchViewModel.flights.observe(viewLifecycleOwner) { flights ->
+            val flightsMap = flights.associateBy { it.id }
+            ordersAdapter = OrdersAdapter(flightsMap) { order ->
+                val bundle = Bundle().apply {
+                    putInt("orderId", order.id ?: 0)
+                }
+                findNavController().navigate(R.id.orderDetailFragment, bundle)
+            }
+            ordersRecyclerView.adapter = ordersAdapter
+            // Optionally re-submit current orders list
+            bookingViewModel.orders.value?.let { ordersAdapter.submitList(it) }
         }
     }
 

@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -13,11 +14,14 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.ukrainianairlines.R
 import com.example.ukrainianairlines.ui.viewmodels.AuthViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationView
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private val authViewModel: AuthViewModel by viewModels()
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navigationView: NavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,9 +35,14 @@ class MainActivity : AppCompatActivity() {
         val bottomNavView: BottomNavigationView = findViewById(R.id.bottom_nav_view)
         bottomNavView.setupWithNavController(navController)
 
+        // Setup drawer navigation
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navigationView = findViewById(R.id.nav_view)
+        navigationView.setupWithNavController(navController)
+
         // Setup app bar
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.nav_search, R.id.nav_bookings, R.id.nav_profile)
+            setOf(R.id.nav_search, R.id.nav_bookings, R.id.nav_profile), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
 

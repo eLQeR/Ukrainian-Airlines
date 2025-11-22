@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/nav_search">
+
+    <action
+        android:id="@+id/action_global_to_login"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="true" />
+
+    <fragment
+        android:id="@+id/nav_search"
+        android:name="com.example.ukrainianairlines.ui.screens.SearchFragment"
+        android:label="@string/nav_search"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_nav_search_to_flightResultsFragment"
+            app:destination="@id/flightResultsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_bookings"
+        android:name="com.example.ukrainianairlines.ui.screens.BookingsFragment"
+        android:label="@string/nav_bookings"
+        tools:layout="@layout/fragment_bookings">
+        <action
+            android:id="@+id/action_nav_bookings_to_orderDetailFragment"
+            app:destination="@id/orderDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/nav_profile"
+        android:name="com.example.ukrainianairlines.ui.screens.ProfileFragment"
+        android:label="@string/nav_profile"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/flightResultsFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.FlightResultsFragment"
+        android:label="@string/flight_results"
+        tools:layout="@layout/fragment_flight_results">
+        <argument
+            android:name="sourceAirport"
+            app:argType="integer" />
+        <argument
+            android:name="destinationAirport"
+            app:argType="integer" />
+        <argument
+            android:name="departureDate"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_flightResultsFragment_to_bookingFragment"
+            app:destination="@id/bookingFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/bookingFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.BookingFragment"
+        android:label="@string/book_flight"
+        tools:layout="@layout/fragment_booking">
+        <argument
+            android:name="flightId"
+            app:argType="integer" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.LoginFragment"
+        android:label="@string/login"
+        tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.RegisterFragment"
+        android:label="@string/register"
+        tools:layout="@layout/fragment_register" />
+
+    <fragment
+        android:id="@+id/orderDetailFragment"
+        android:name="com.example.ukrainianairlines.ui.screens.OrderDetailFragment"
+        android:label="Order Details"
+        tools:layout="@layout/fragment_order_detail">
+        <argument
+            android:name="orderId"
+            app:argType="integer" />
+    </fragment>
+
+</navigation>
