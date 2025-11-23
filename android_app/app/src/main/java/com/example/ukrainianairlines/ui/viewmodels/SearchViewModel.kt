@@ -82,30 +82,26 @@ class SearchViewModel(application: Application) : AndroidViewModel(application) 
             _searchResult.value = null
 
             if (sourceAirport != null && destinationAirport != null && departureDate != null) {
-                android.util.Log.d("SearchViewModel", "Using searchFlights endpoint")
-                // Use the transfer ways endpoint for better search results
-                repository.searchFlights(sourceAirport, destinationAirport, departureDate).collect { result ->
+                android.util.Log.d("SearchViewModel", "Using getFlights endpoint with filters")
+                repository.getFlights(sourceAirport, destinationAirport, departureDate).collect { result ->
                     result.onSuccess { flights ->
-                        android.util.Log.d("SearchViewModel", "searchFlights response: ${flights.size} flights")
+                        android.util.Log.d("SearchViewModel", "getFlights response: ${flights.size} flights")
                         _flights.value = flights
                         _searchResult.value = FlightSearchResult(directFlights = flights)
                         android.util.Log.d("SearchViewModel", "Updated flights LiveData with ${flights.size} flights")
                     }.onFailure { exception ->
-                        android.util.Log.e("SearchViewModel", "searchFlights failed", exception)
+                        android.util.Log.e("SearchViewModel", "getFlights failed", exception)
                         _error.value = exception.message
                         _flights.value = emptyList()
                     }
                 }
             } else {
                 android.util.Log.d("SearchViewModel", "Using getFlights endpoint (fallback)")
-                // Fallback to basic flight search
-                repository.getFlights(sourceAirport, destinationAirport, departureDate).collect { result ->
+                repository.getFlights().collect { result ->
                     result.onSuccess { flights ->
-                        android.util.Log.d("SearchViewModel", "getFlights response: ${flights.size} flights")
                         _flights.value = flights
                         _searchResult.value = FlightSearchResult(directFlights = flights)
                     }.onFailure { exception ->
-                        android.util.Log.e("SearchViewModel", "getFlights failed", exception)
                         _error.value = exception.message
                         _flights.value = emptyList()
                     }

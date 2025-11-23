@@ -59,20 +59,9 @@ class SearchFragment : Fragment() {
             showDatePicker()
         }
 
-        // Add click listeners to open airport selection
-        fromAirportInput.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_search_to_airportsFragment)
-        }
-
-        toAirportInput.setOnClickListener {
-            findNavController().navigate(R.id.action_nav_search_to_airportsFragment)
-        }
-
         searchButton.setOnClickListener {
             performSearch()
         }
-
-        searchViewModel.loadAirports()
     }
 
     private fun observeViewModel() {
@@ -109,28 +98,39 @@ class SearchFragment : Fragment() {
         fromAirportInput.hint = "Select departure airport"
         toAirportInput.hint = "Select arrival airport"
 
+        // Remove focus and enable settings, as they are not needed for AutoCompleteTextView
+        // Ensure dropdown is shown when field is clicked
+        fromAirportInput.setOnClickListener {
+            fromAirportInput.showDropDown()
+        }
+        toAirportInput.setOnClickListener {
+            toAirportInput.showDropDown()
+        }
+
         if (fromAirports.isNotEmpty()) {
             selectedFromAirport = fromAirports.find { it.name.contains("Boryspil") } ?: fromAirports[0]
             selectedToAirport = fromAirports.find { it.name.contains("Warsaw") } ?: fromAirports.getOrNull(1)
 
-            fromAirportInput.setText(selectedFromAirport?.name ?: "")
-            toAirportInput.setText(selectedToAirport?.name ?: "")
+            fromAirportInput.setText(selectedFromAirport?.name ?: "", false)
+            toAirportInput.setText(selectedToAirport?.name ?: "", false)
         }
 
         val adapter = ArrayAdapter(
             requireContext(),
             android.R.layout.simple_dropdown_item_1line,
-            fromAirports
+            fromAirports.map { it.name }
         )
         fromAirportInput.setAdapter(adapter)
         toAirportInput.setAdapter(adapter)
 
         fromAirportInput.setOnItemClickListener { _, _, position, _ ->
-            selectedFromAirport = adapter.getItem(position)
+            selectedFromAirport = fromAirports[position]
+            fromAirportInput.setText(selectedFromAirport?.name ?: "", false)
         }
 
         toAirportInput.setOnItemClickListener { _, _, position, _ ->
-            selectedToAirport = adapter.getItem(position)
+            selectedToAirport = fromAirports[position]
+            toAirportInput.setText(selectedToAirport?.name ?: "", false)
         }
     }
 
