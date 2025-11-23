@@ -13,6 +13,18 @@
                       <LayoutPositions />
                     </value>
                   </entry>
+                  <entry key="airportsFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="bookingFragment">
                     <value>
                       <LayoutPositions>
@@ -102,6 +114,11 @@
                         </option>
                         <option name="myPositions">
                           <map>
+                            <entry key="action_nav_search_to_airportsFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
                             <entry key="action_nav_search_to_flightResultsFragment">
                               <value>
                                 <LayoutPositions />
@@ -132,6 +149,15 @@
                             <option name="x" value="12" />
                             <option name="y" value="12" />
                           </Point>
+                        </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_ordersFragment_to_orderDetailFragment">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
                         </option>
                       </LayoutPositions>
                     </value>

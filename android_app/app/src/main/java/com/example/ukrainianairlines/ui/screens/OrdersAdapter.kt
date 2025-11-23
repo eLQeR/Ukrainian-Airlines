@@ -52,7 +52,8 @@ class OrdersAdapter(
             // Flight route - show first ticket's route if available
             if (order.tickets.isNotEmpty()) {
                 val ticket = order.tickets.first()
-                val flight = flights[ticket.flight]
+                val flightId = ticket.flight?.id
+                val flight = if (flightId != null) flights[flightId] else null
                 val route = flight?.route
                 val source = when {
                     route?.source is Map<*, *> -> (route.source as Map<*, *>)["name"]?.toString()

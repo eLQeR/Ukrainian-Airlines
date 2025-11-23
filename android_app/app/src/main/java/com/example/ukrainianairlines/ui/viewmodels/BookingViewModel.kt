@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.ukrainianairlines.UkrainianAirlinesApplication
 import com.example.ukrainianairlines.data.api.UkrainianAirlinesApi
+import com.example.ukrainianairlines.data.model.Flight
 import com.example.ukrainianairlines.data.model.Order
 import com.example.ukrainianairlines.data.repository.UkrainianAirlinesRepository
 import kotlinx.coroutines.launch
@@ -102,6 +103,17 @@ class BookingViewModel(application: Application) : AndroidViewModel(application)
                 _isLoading.value = false
             }
         }
+    }
+
+    fun getFlightById(flightId: Int, callback: (Flight?) -> Unit) {
+        viewModelScope.launch {
+            val response = repository.getFlightById(flightId)
+            callback(response)
+        }
+    }
+
+    suspend fun getFlightByIdSuspend(flightId: Int): Flight? {
+        return repository.getFlightById(flightId)
     }
 
     fun clearError() {

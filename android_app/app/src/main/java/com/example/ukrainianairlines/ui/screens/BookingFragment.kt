@@ -10,13 +10,16 @@ import android.widget.NumberPicker
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.ukrainianairlines.R
 import com.example.ukrainianairlines.data.model.Order
 import com.example.ukrainianairlines.data.model.Passenger
 import com.example.ukrainianairlines.data.model.Ticket
+import com.example.ukrainianairlines.data.model.Flight
 import com.example.ukrainianairlines.ui.viewmodels.BookingViewModel
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.launch
 
 class BookingFragment : Fragment() {
 
@@ -30,12 +33,16 @@ class BookingFragment : Fragment() {
     private lateinit var rowPicker: NumberPicker
     private lateinit var seatPicker: NumberPicker
 
-    private var selectedFlightId: Int = 0
+    private var selectedFlight: Flight? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-            selectedFlightId = it.getInt("flightId", 0)
+        arguments?.let { args ->
+            val flightId = args.getInt("flightId", 0)
+            lifecycleScope.launch {
+                val flight = bookingViewModel.getFlightByIdSuspend(flightId)
+                selectedFlight = flight
+            }
         }
     }
 
@@ -107,10 +114,14 @@ class BookingFragment : Fragment() {
 
         val selectedRow = rowPicker.value
         val selectedSeat = seatPicker.value
+        val flight = selectedFlight ?: run {
+            Snackbar.make(requireView(), "Flight not loaded", Snackbar.LENGTH_SHORT).show()
+            return
+        }
         val ticket = Ticket(
             row = selectedRow,
             seat = selectedSeat,
-            flight = selectedFlightId,
+            flight = flight,
             passenger = passenger
         )
 

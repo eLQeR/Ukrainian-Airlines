@@ -30,7 +30,8 @@ class TicketsAdapter(private val flights: Map<Int, com.example.ukrainianairlines
         fun bind(ticket: Ticket) {
             passengerNameText.text = "${ticket.passenger.first_name} ${ticket.passenger.last_name}"
             seatText.text = "Row ${ticket.row}, Seat ${ticket.seat}"
-            val flight = flights[ticket.flight]
+            val flightId = ticket.flight?.id
+            val flight = if (flightId != null) flights[flightId] else null
             val route = flight?.route
             val source = when {
                 route?.source is Map<*, *> -> (route.source as Map<*, *>)["name"]?.toString()
